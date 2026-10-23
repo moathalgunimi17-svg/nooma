@@ -39,6 +39,20 @@ find src -iname desktop.ini -delete
 
 ## Deploy
 
+### Client preview (GitHub Pages)
+
+Live at **https://moathalgunimi17-svg.github.io/nooma/**. Every page there carries `noindex`, because any host other
+than nooma.om is treated as a preview. To publish your latest changes to it:
+
+```bash
+npm run deploy:preview
+```
+
+This builds with the `/nooma/` base, checks the links, and force-pushes `dist/` to the `gh-pages` branch. The source
+lives on `main` at https://github.com/moathalgunimi17-svg/nooma.
+
+### Production
+
 The build is plain static files in `dist/`. Any static host works (Netlify, Cloudflare Pages, Vercel, GitHub Pages, cPanel hosting).
 
 - **On its own domain** (e.g. nooma.om): build normally. `site` defaults to `https://nooma.om`.
