@@ -1,0 +1,82 @@
+---
+import { Image } from 'astro:assets';
+import { site, type Locale } from '~/config/site';
+import { useT } from '~/i18n/ui';
+import { alternate, href, routes } from '~/i18n/routes';
+import { liveCategories } from '~/lib/art';
+import Icon from './Icon.astro';
+import Stars from './Stars.astro';
+import logoArLight from '~/assets/brand/logo-ar-light.png';
+import logoEnLight from '~/assets/brand/logo-en-light.png';
+import catCurled from '~/assets/brand/cat-curled.svg';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const t = useT(locale);
+const logo = locale === 'ar' ? logoArLight : logoEnLight;
+const cats = liveCategories();
+const year = new Date().getFullYear();
+const path = Astro.url.pathname;
+---
+<footer class="site-footer">
+  <div class="footer__sky" aria-hidden="true">
+    <Stars count={26} seed={7} />
+    <svg class="footer__moon" viewBox="0 0 120 120"><path d="M84 86A42 42 0 0 1 40 22a42 42 0 1 0 44 64z" /></svg>
+  </div>
+  <img class="footer__cat" src={catCurled.src} width="150" height="139" alt="" loading="lazy" decoding="async" />
+
+  <div class="container footer__top">
+    <div class="footer__brand">
+      <Image src={logo} alt={site.name[locale]} width={190} densities={[1, 2]} loading="lazy" />
+      <p>{t('footer.tagline')}</p>
+      <p class="footer__night" lang="en">Stay cozy, sleep well <span aria-hidden="true">☾</span></p>
+    </div>
+
+    <nav class="footer__cols" aria-label={t('footer.shop')}>
+      <div>
+        <h2>{t('footer.shop')}</h2>
+        <ul role="list">
+          <li><a href={href(locale, routes.shop)}>{t('nav.allProducts')}</a></li>
+          {cats.map((c) => <li><a href={href(locale, routes.collection(c.slug))}>{c.name[locale]}</a></li>)}
+        </ul>
+      </div>
+      <div>
+        <h2>{t('footer.help')}</h2>
+        <ul role="list">
+          <li><a href={href(locale, routes.sizeGuide)}>{t('nav.sizeGuide')}</a></li>
+          <li><a href={href(locale, routes.faq)}>{t('faq.title')}</a></li>
+          <li><a href={href(locale, routes.shipping)}>{t('policy.shipping')}</a></li>
+          <li><a href={href(locale, routes.returns)}>{t('policy.returns')}</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>{t('footer.brand')}</h2>
+        <ul role="list">
+          <li><a href={href(locale, routes.about)}>{t('nav.about')}</a></li>
+          <li><a href={href(locale, routes.contact)}>{t('nav.contact')}</a></li>
+          <li><a href={href(locale, routes.privacy)}>{t('policy.privacy')}</a></li>
+          <li><a href={href(locale, routes.terms)}>{t('policy.terms')}</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>{t('footer.contact')}</h2>
+        <ul role="list" class="footer__contact">
+          <li><a href={site.contact.whatsappLink} target="_blank" rel="noopener"><Icon name="whatsapp" /> {t('contact.wa')}</a></li>
+          <li><a href={`tel:${site.contact.phoneTel}`}><Icon name="phone" /> <bdi dir="ltr">{site.contact.phoneDisplay}</bdi></a></li>
+          <li><a href={`mailto:${site.contact.email}`} class="footer__email"><Icon name="mail" /> <bdi dir="ltr">{site.contact.email}</bdi></a></li>
+          <li><a href={site.contact.instagramUrl} target="_blank" rel="noopener"><Icon name="instagram" /> <bdi dir="ltr">@{site.contact.instagramHandle}</bdi></a></li>
+        </ul>
+      </div>
+    </nav>
+  </div>
+
+  <div class="container footer__bottom">
+    <p>© {year} Nooma · نُومة — {t('footer.rights')}</p>
+    <p class="footer__langs">
+      <Icon name="globe" />
+      <a href={alternate(path, 'ar')} lang="ar" hreflang="ar" aria-current={locale === 'ar' ? 'true' : undefined} data-lang-switch>العربية</a>
+      <span aria-hidden="true">·</span>
+      <a href={alternate(path, 'en')} lang="en" hreflang="en" aria-current={locale === 'en' ? 'true' : undefined} data-lang-switch>English</a>
+    </p>
+  </div>
+</footer>

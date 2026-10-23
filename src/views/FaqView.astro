@@ -1,0 +1,44 @@
+---
+import Base from '~/layouts/Base.astro';
+import '~/styles/shop.css';
+import '~/styles/content.css';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import Icon from '~/components/Icon.astro';
+import { site, type Locale } from '~/config/site';
+import { useT, type UIKey } from '~/i18n/ui';
+import { href, routes } from '~/i18n/routes';
+import catStretch from '~/assets/brand/cat-stretch.svg';
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const t = useT(locale);
+const qa = [1, 2, 3, 4, 5, 6].map((n) => ({ q: t(`faq.q${n}` as UIKey), a: t(`faq.a${n}` as UIKey) }));
+const ld = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: qa.map((x) => ({ '@type': 'Question', name: x.q, acceptedAnswer: { '@type': 'Answer', text: x.a } })),
+};
+---
+<Base locale={locale} path={routes.faq} title={`${t('faq.title')} | ${t('meta.siteName')}`} description={t('faq.desc')} jsonLd={ld}>
+  <div class="container page">
+    <Breadcrumbs items={[{ label: t('common.home'), href: href(locale) }, { label: t('faq.title') }]} locale={locale} />
+    <div class="faq">
+      <div>
+        <h1>{t('faq.title')}</h1>
+        <div class="faq__list">
+          {qa.map((x, i) => (
+            <details open={i === 0} data-reveal style={`--i:${i}`}>
+              <summary>{x.q}<span class="faq__plus" aria-hidden="true"><Icon name="plus" /></span></summary>
+              <p>{x.a}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+      <aside class="page__card page__card--tint faq__aside">
+        <img src={catStretch.src} width="140" height="195" alt="" loading="lazy" />
+        <h2>{t('contact.lead')}</h2>
+        <a class="btn btn--wa btn--block" href={site.contact.whatsappLink} target="_blank" rel="noopener"><Icon name="whatsapp" /> {t('contact.wa')}</a>
+        <a class="link-arrow" href={href(locale, routes.sizeGuide)}>{t('nav.sizeGuide')} <Icon name="arrow" /></a>
+      </aside>
+    </div>
+  </div>
+</Base>

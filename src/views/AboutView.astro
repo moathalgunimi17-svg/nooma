@@ -1,0 +1,67 @@
+---
+import { Image } from 'astro:assets';
+import Base from '~/layouts/Base.astro';
+import '~/styles/shop.css';
+import '~/styles/content.css';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import Pending from '~/components/Pending.astro';
+import Icon from '~/components/Icon.astro';
+import Stars from '~/components/Stars.astro';
+import type { Locale } from '~/config/site';
+import { useT } from '~/i18n/ui';
+import { href, routes } from '~/i18n/routes';
+import { art, artAlt } from '~/lib/art';
+import logoAr from '~/assets/brand/logo-ar.png';
+import logoEn from '~/assets/brand/logo-en.png';
+import sun from '~/assets/brand/sun.png';
+import starNote from '~/assets/brand/star-note.svg';
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const t = useT(locale);
+const palette = [
+  { name: locale === 'ar' ? 'عاجي' : 'Ivory', v: 'var(--color-paper)' },
+  { name: locale === 'ar' ? 'لافندر' : 'Lavender', v: 'var(--color-lavender)' },
+  { name: locale === 'ar' ? 'نيلي' : 'Indigo', v: 'var(--color-indigo)' },
+  { name: locale === 'ar' ? 'وردي' : 'Blush', v: 'var(--color-blush)' },
+  { name: locale === 'ar' ? 'شمسي' : 'Butter', v: 'var(--color-butter)' },
+];
+---
+<Base locale={locale} path={routes.about} title={`${t('about.title')} | ${t('meta.siteName')}`} description={t('about.desc')}>
+  <div class="container page">
+    <Breadcrumbs items={[{ label: t('common.home'), href: href(locale) }, { label: t('about.title') }]} locale={locale} />
+    <section class="about-hero wallpaper">
+      <Stars count={12} seed={5} />
+      <div class="about-hero__logos">
+        <Image src={logoAr} alt="نُومة" width={300} densities={[1, 2]} loading="eager" />
+        <Image src={logoEn} alt="Nooma" width={300} densities={[1, 2]} loading="eager" />
+      </div>
+    </section>
+
+    <div class="about">
+      <div class="about__copy prose">
+        <h1>{t('about.title')}</h1>
+        <p class="page__lead">{t('about.lead')}</p>
+        <p>{t('about.p1')}</p>
+        <p>{t('about.p2')}</p>
+        <Pending locale={locale} text={t('about.storyPending')} />
+        <a class="btn" href={href(locale, routes.shop)}>{t('about.cta')} <Icon name="arrow" class="flip-rtl" /></a>
+      </div>
+      <div class="about__art">
+        <Image class="about__sun" src={sun} alt="" width={200} densities={[1, 2]} />
+        <Image src={art['mirror-siblings']} alt={artAlt['mirror-siblings'][locale]} width={320} densities={[1, 2]} />
+      </div>
+    </div>
+
+    <section class="about-palette" aria-label={locale === 'ar' ? 'ألوان نُومة' : 'Nooma colours'}>
+      <ul role="list">
+        {palette.map((c, i) => (
+          <li data-reveal style={`--i:${i}; --c:${c.v}`}><span></span>{c.name}</li>
+        ))}
+      </ul>
+    </section>
+
+    <figure class="about-note" data-reveal="scale">
+      <img src={starNote.src} width="360" height="345" alt={t('about.signature')} loading="lazy" />
+    </figure>
+  </div>
+</Base>

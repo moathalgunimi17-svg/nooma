@@ -1,0 +1,23 @@
+---
+import { site, type Locale } from '~/config/site';
+import { useT } from '~/i18n/ui';
+import Icon from './Icon.astro';
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const t = useT(locale);
+const a = site.announcement;
+---
+{a.enabled && (
+  <div class="announce">
+    <p class="announce__text">
+      <Icon name="sparkle" class="announce__spark" />
+      <span>{a[locale]}</span>
+      <Icon name="sparkle" class="announce__spark" />
+    </p>
+  </div>
+)}
+{site.sampleCatalog && (
+  <div class="sample-bar">
+    <p class="container"><Icon name="info" /> {t('common.sampleBanner')}</p>
+  </div>
+)}

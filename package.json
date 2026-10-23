@@ -1,0 +1,27 @@
+{
+  "name": "nooma-store",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Nooma | نُومة — children's pajamas storefront (Arabic-first, bilingual, WhatsApp ordering).",
+  "scripts": {
+    "dev": "astro dev --port 5200 --host 127.0.0.1",
+    "build": "astro check && vitest run && astro build",
+    "preview": "astro preview --port 5201 --host 127.0.0.1",
+    "check": "astro check",
+    "test": "vitest run",
+    "deploy:preview": "bash tools/deploy-preview.sh"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.12",
+    "@astrojs/sitemap": "^3.7.4",
+    "@fontsource-variable/baloo-bhaijaan-2": "^5.3.0",
+    "@fontsource-variable/readex-pro": "^5.3.0",
+    "@fontsource/nanum-pen-script": "^5.3.0",
+    "astro": "^5.18.2",
+    "typescript": "^5.9.3"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.7"
+  }
+}

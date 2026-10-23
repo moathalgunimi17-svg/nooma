@@ -1,0 +1,13 @@
+---
+/** Visible marker for content that still needs Nooma's confirmation. */
+import type { Locale } from '~/config/site';
+import { useT } from '~/i18n/ui';
+import Icon from './Icon.astro';
+interface Props { locale: Locale; text?: string }
+const { locale, text } = Astro.props;
+const t = useT(locale);
+---
+<div class="pending" role="note">
+  <Icon name="info" />
+  <p><strong>{t('pending.label')}</strong>{text ?? t('pending.text')}</p>
+</div>

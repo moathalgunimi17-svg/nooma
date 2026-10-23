@@ -1,0 +1,35 @@
+---
+import type { Locale } from '~/config/site';
+import { useT } from '~/i18n/ui';
+import { href, routes } from '~/i18n/routes';
+import { products } from '~/data/catalog';
+import Icon from './Icon.astro';
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const t = useT(locale);
+const suggestions = products.slice(0, 4).map((p) => ({ name: p.name[locale], slug: p.slug }));
+---
+<dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title">
+  <form class="search-dialog__form" role="search" action={href(locale, routes.shop)} method="get">
+    <h2 id="search-title" class="visually-hidden">{t('search.title')}</h2>
+    <label class="search-dialog__field">
+      <Icon name="search" />
+      <span class="visually-hidden">{t('shop.searchLabel')}</span>
+      <input
+        type="search"
+        name="q"
+        autocomplete="off"
+        placeholder={t('search.placeholder')}
+        data-search-input
+        aria-controls="search-results"
+        aria-describedby="search-status"
+      />
+    </label>
+    <button class="icon-btn" type="button" data-close><Icon name="close" /><span class="visually-hidden">{t('a11y.close')}</span></button>
+  </form>
+  <p class="search-dialog__status muted" id="search-status" data-search-status aria-live="polite">{t('search.hint')}</p>
+  <ul role="list" class="search-dialog__results" id="search-results" data-search-results></ul>
+  <div class="search-dialog__suggest" data-search-suggest>
+    {suggestions.map((s) => <a class="chip" href={href(locale, routes.product(s.slug))}>{s.name}</a>)}
+  </div>
+</dialog>

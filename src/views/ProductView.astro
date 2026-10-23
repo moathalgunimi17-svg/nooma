@@ -1,0 +1,241 @@
+---
+import { Image, getImage } from 'astro:assets';
+import Base from '~/layouts/Base.astro';
+import '~/styles/shop.css';
+import '~/styles/product.css';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import ProductCard from '~/components/ProductCard.astro';
+import SizeTable from '~/components/SizeTable.astro';
+import Pending from '~/components/Pending.astro';
+import Icon from '~/components/Icon.astro';
+import { site, type Locale } from '~/config/site';
+import { useT } from '~/i18n/ui';
+import { href, routes } from '~/i18n/routes';
+import { products } from '~/data/catalog';
+import { art, artAlt, colourPhotos, getCategory, getProduct, sizeById } from '~/lib/art';
+import { formatPrice } from '~/lib/format';
+
+interface Props { locale: Locale; slug: string }
+const { locale, slug } = Astro.props;
+const t = useT(locale);
+const p = getProduct(slug)!;
+const cat = getCategory(p.categoryId);
+
+const media = p.colourways.map((c) => {
+  const photos = colourPhotos(c);
+  return {
+    colour: c,
+    isArt: photos.length === 0,
+    images: photos.length ? photos : [art[c.art]],
+    alt: photos.length ? `${p.name[locale]} — ${c.name[locale]}` : artAlt[c.art][locale],
+  };
+});
+const thumbs = await Promise.all(
+  media.flatMap((m) => m.images.map(async (img) => ({ colour: m.colour.id, src: (await getImage({ src: img, width: 160, format: 'webp' })).src }))),
+);
+
+const related = [
+  ...products.filter((x) => x.id !== p.id && x.categoryId === p.categoryId),
+  ...products.filter((x) => x.id !== p.id && x.categoryId !== p.categoryId),
+].slice(0, 4);
+
+const title = `${p.name[locale]} | ${t('meta.siteName')}`;
+const desc = `${p.summary[locale]} — ${p.description[locale]}`.slice(0, 158);
+const og = (await getImage({ src: media[0]!.images[0]!, width: 600, format: 'jpg', background: '#FFF6F5' })).src;
+const crumbs = [
+  { label: t('common.home'), href: href(locale) },
+  ...(cat ? [{ label: cat.name[locale], href: href(locale, routes.collection(cat.slug)) }] : []),
+  { label: p.name[locale] },
+];
+
+// Structured data only for real products with real prices — never for samples.
+const productLd = !p.sample && p.price !== null
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: p.name[locale],
+      description: p.description[locale],
+      image: new URL(og, Astro.site ?? site.domain).href,
+      brand: { '@type': 'Brand', name: 'Nooma' },
+      offers: {
+        '@type': 'Offer',
+        priceCurrency: site.commerce.currency,
+        price: p.price.toFixed(3),
+        url: new URL(href(locale, routes.product(p.slug)), Astro.site ?? site.domain).href,
+      },
+    }
+  : undefined;
+const tint = cat?.tint ?? 'lavender';
+// Only meaningful when Nooma tracks stock; without stock data nothing is ever shown as sold out.
+const isSoldOut = (id: string) => (p.stock ? !((p.stock[id] ?? 0) > 0) : false);
+---
+<Base locale={locale} path={routes.product(p.slug)} title={title} description={desc} ogImage={og} jsonLd={productLd}>
+  <div class="container pdp" data-pdp data-id={p.id} data-name={p.name[locale]}>
+    <Breadcrumbs items={crumbs} locale={locale} />
+
+    <div class="pdp__grid">
+      <div class="pdp__gallery" style={`--tint: var(--tint-${tint})`}>
+        <div class="pdp__stage">
+          <span class="pdp__hole" aria-hidden="true"></span>
+          {media.map((m, i) => (
+            <figure class="pdp__slide" data-colour-slide={m.colour.id} hidden={i !== 0}>
+              <Image
+                src={m.images[0]!}
+                alt={m.alt}
+                widths={[360, 560, 760]}
+                sizes="(max-width: 900px) 90vw, 560px"
+                loading={i === 0 ? 'eager' : 'lazy'}
+                fetchpriority={i === 0 ? 'high' : undefined}
+              />
+            </figure>
+          ))}
+          {media.some((m) => m.isArt) && (
+            <p class="pdp__art-note"><Icon name="info" /> {t('product.illustration')} · {t('product.photoSoon')}</p>
+          )}
+        </div>
+        {thumbs.length > 1 && (
+          <div class="pdp__thumbs" role="group" aria-label={t('product.colour')}>
+            {thumbs.map((th, i) => {
+              const c = p.colourways.find((x) => x.id === th.colour)!;
+              return (
+                <button type="button" class="pdp__thumb" data-thumb={th.colour} aria-pressed={i === 0 ? 'true' : 'false'} style={`--sw: ${c.swatch}`}>
+                  <img src={th.src} alt="" width="80" height="96" decoding="async" />
+                  <span class="visually-hidden">{c.name[locale]}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      <div class="pdp__info">
+        <div class="pdp__chips">
+          {cat && <a class="chip" href={href(locale, routes.collection(cat.slug))}>{cat.name[locale]}</a>}
+          {p.sample && <span class="chip chip--sample">{t('product.sample')}</span>}
+        </div>
+        <h1 class="pdp__title">{p.name[locale]}</h1>
+        <p class="pdp__price">
+          {p.price === null ? (
+            <span class="muted">{t('product.priceTbc')}</span>
+          ) : (
+            <>
+              {p.compareAtPrice && <s class="muted">{formatPrice(p.compareAtPrice, locale)}</s>}
+              <span>{formatPrice(p.price, locale)}</span>
+            </>
+          )}
+        </p>
+        <p class="pdp__summary">{p.summary[locale]}</p>
+        {p.sample && <p class="pdp__sample-note"><Icon name="info" /> {t('product.sampleLong')}</p>}
+
+        <form class="pdp__form" data-pdp-form novalidate>
+          <fieldset class="opt-group" hidden={p.colourways.length < 2}>
+            <legend>{t('product.colour')} <span data-colour-name>{p.colourways[0]!.name[locale]}</span></legend>
+            <div class="swatches">
+              {p.colourways.map((c, i) => (
+                <label class="swatch" style={`--sw: ${c.swatch}`}>
+                  <input type="radio" name="colour" value={c.id} checked={i === 0} data-name={c.name[locale]} />
+                  <span>{c.name[locale]}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <fieldset class="opt-group" aria-describedby="pdp-size-error">
+            <legend>
+              {t('product.size')}
+              <button type="button" class="pdp__guide-link" data-open="size-dialog" aria-haspopup="dialog"><Icon name="ruler" /> {t('product.sizeGuide')}</button>
+            </legend>
+            <div class="sizes" data-size-list>
+              {p.sizeIds.map((id) => {
+                const out = isSoldOut(id);
+                return (
+                  <label class="size-chip">
+                    <input type="radio" name="size" value={id} disabled={out} required />
+                    <span>{sizeById.get(id)!.label[locale]}{out && <small class="visually-hidden"> — {t('product.outOfStock')}</small>}</span>
+                  </label>
+                );
+              })}
+            </div>
+            <p class="field-error" id="pdp-size-error" data-size-error aria-live="assertive"></p>
+          </fieldset>
+
+          <div class="pdp__buy">
+            <div class="stepper" role="group" aria-label={t('product.qty')}>
+              <button type="button" class="stepper__btn" data-qty-dec disabled><Icon name="minus" /><span class="visually-hidden">{t('product.decrease')}</span></button>
+              <input class="stepper__input" lang="en" dir="ltr" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" name="qty" value="1" min="1" max={site.commerce.maxQtyPerLine} aria-label={t('product.qty')} data-qty />
+              <button type="button" class="stepper__btn" data-qty-inc><Icon name="plus" /><span class="visually-hidden">{t('product.increase')}</span></button>
+            </div>
+            <button class="btn pdp__add" type="submit" disabled={p.price === null} data-add>
+              <Icon name="bag" /> <span class="btn__label">{t('product.add')}</span>
+            </button>
+          </div>
+          <button class="btn btn--wa btn--block" type="button" data-wa-direct>
+            <Icon name="whatsapp" /> {t('product.orderWa')}
+          </button>
+        </form>
+
+        <div class="pdp__acc">
+          <details open>
+            <summary>{t('product.details')}<Icon name="chevronDown" /></summary>
+            <div><p>{p.description[locale]}</p></div>
+          </details>
+          <details>
+            <summary>{t('product.delivery')}<Icon name="chevronDown" /></summary>
+            <div>
+              <p>{t('product.deliveryText')}</p>
+              <p>
+                <a href={href(locale, routes.shipping)}>{t('policy.shipping')}</a> ·
+                <a href={href(locale, routes.returns)}>{t('policy.returns')}</a>
+              </p>
+              <Pending locale={locale} />
+            </div>
+          </details>
+          <details>
+            <summary>{t('size.help')}<Icon name="chevronDown" /></summary>
+            <div>
+              <p>{t('size.helpText')}</p>
+              <a class="link-arrow" href={site.contact.whatsappLink} target="_blank" rel="noopener"><Icon name="whatsapp" /> {t('contact.wa')}</a>
+            </div>
+          </details>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pdp-bar" data-pdp-bar hidden>
+    <div class="container pdp-bar__inner">
+      <div class="pdp-bar__meta">
+        <strong>{p.name[locale]}</strong>
+        <span>{p.price === null ? t('product.priceTbc') : formatPrice(p.price, locale)}</span>
+      </div>
+      <button class="btn btn--sm" type="button" data-bar-add disabled={p.price === null}><Icon name="bag" /> {t('product.add')}</button>
+    </div>
+  </div>
+
+  <dialog class="sheet sheet--bottom size-dialog" id="size-dialog" aria-labelledby="size-dialog-title">
+    <div class="sheet__head">
+      <h2 id="size-dialog-title">{t('size.title')}</h2>
+      <button class="icon-btn" type="button" data-close><Icon name="close" /><span class="visually-hidden">{t('a11y.close')}</span></button>
+    </div>
+    <div class="sheet__body">
+      <SizeTable locale={locale} only={p.sizeIds} />
+      <p class="muted size-dialog__help">{t('size.helpText')}</p>
+      <a class="link-arrow" href={href(locale, routes.sizeGuide)}>{t('size.how')} <Icon name="arrow" /></a>
+    </div>
+  </dialog>
+
+  {related.length > 0 && (
+    <section class="section" aria-labelledby="related-title">
+      <div class="container">
+        <h2 id="related-title">{t('product.related')}</h2>
+        <div class="pgrid">
+          {related.map((r, i) => <ProductCard product={r} locale={locale} index={i} />)}
+        </div>
+      </div>
+    </section>
+  )}
+</Base>
+
+<script>
+  import '~/scripts/product';
+</script>

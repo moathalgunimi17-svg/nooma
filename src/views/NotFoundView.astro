@@ -1,0 +1,26 @@
+---
+import Base from '~/layouts/Base.astro';
+import '~/styles/content.css';
+import Icon from '~/components/Icon.astro';
+import Stars from '~/components/Stars.astro';
+import type { Locale } from '~/config/site';
+import { useT } from '~/i18n/ui';
+import { href, routes } from '~/i18n/routes';
+import catCurled from '~/assets/brand/cat-curled.svg';
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const t = useT(locale);
+---
+<Base locale={locale} path="404/" title={`${t('404.title')} | ${t('meta.siteName')}`} description={t('404.text')} noindex>
+  <section class="container nf">
+    <div class="nf__sky"><Stars count={14} seed={9} /></div>
+    <img class="nf__cat" src={catCurled.src} width="220" height="204" alt="" />
+    <p class="nf__zzz" aria-hidden="true">z z z</p>
+    <h1>{t('404.title')}</h1>
+    <p class="muted">{t('404.text')}</p>
+    <div class="nf__actions">
+      <a class="btn" href={href(locale)}>{t('404.cta')}</a>
+      <a class="btn btn--ghost" href={href(locale, routes.shop)}>{t('nav.allProducts')} <Icon name="arrow" class="flip-rtl" /></a>
+    </div>
+  </section>
+</Base>

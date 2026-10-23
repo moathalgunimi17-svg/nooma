@@ -1,0 +1,134 @@
+---
+import Base from '~/layouts/Base.astro';
+import '~/styles/shop.css';
+import '~/styles/content.css';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import Icon from '~/components/Icon.astro';
+import { site, type Locale } from '~/config/site';
+import { useT } from '~/i18n/ui';
+import { href, routes } from '~/i18n/routes';
+import catFace from '~/assets/brand/cat-face.svg';
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const t = useT(locale);
+const c = site.contact;
+---
+<Base locale={locale} path={routes.contact} title={`${t('contact.title')} | ${t('meta.siteName')}`} description={t('contact.desc')}>
+  <div class="container page">
+    <Breadcrumbs items={[{ label: t('common.home'), href: href(locale) }, { label: t('contact.title') }]} locale={locale} />
+    <header class="page__head">
+      <div>
+        <h1>{t('contact.title')}</h1>
+        <p class="page__lead">{t('contact.lead')}</p>
+      </div>
+      <img class="page__art" src={catFace.src} width="140" height="137" alt="" />
+    </header>
+
+    <ul role="list" class="contact-cards">
+      <li data-reveal style="--i:0">
+        <a href={c.whatsappLink} target="_blank" rel="noopener" class="contact-card contact-card--wa">
+          <span class="contact-card__icon"><Icon name="whatsapp" /></span>
+          <strong>{t('contact.wa')}</strong>
+          <span>{t('contact.waText')}</span>
+        </a>
+      </li>
+      <li data-reveal style="--i:1">
+        <a href={`tel:${c.phoneTel}`} class="contact-card">
+          <span class="contact-card__icon"><Icon name="phone" /></span>
+          <strong>{t('contact.phone')}</strong>
+          <span dir="ltr">{c.phoneDisplay}</span>
+        </a>
+      </li>
+      <li data-reveal style="--i:2">
+        <a href={`mailto:${c.email}`} class="contact-card">
+          <span class="contact-card__icon"><Icon name="mail" /></span>
+          <strong>{t('contact.email')}</strong>
+          <span dir="ltr" class="contact-card__email">{c.email}</span>
+          <small>{t('contact.emailText')}</small>
+        </a>
+      </li>
+      <li data-reveal style="--i:3">
+        <a href={c.instagramUrl} target="_blank" rel="noopener" class="contact-card">
+          <span class="contact-card__icon"><Icon name="instagram" /></span>
+          <strong>{t('contact.ig')}</strong>
+          <bdi dir="ltr">@{c.instagramHandle}</bdi>
+        </a>
+      </li>
+    </ul>
+
+    <div class="page__split">
+      <section class="page__card" aria-labelledby="form-title">
+        <h2 id="form-title">{t('contact.formTitle')}</h2>
+        <p class="muted">{t('contact.formText')}</p>
+        <form class="contact-form" data-contact-form data-email={c.email} novalidate>
+          <div class="field">
+            <label for="cf-name">{t('contact.name')}</label>
+            <input class="input" id="cf-name" name="name" autocomplete="name" maxlength="80" aria-describedby="cf-name-err" />
+            <p class="field-error" id="cf-name-err" data-err="name" data-msg={t('contact.err.name')}></p>
+          </div>
+          <div class="field">
+            <label for="cf-topic">{t('contact.topic')}</label>
+            <select class="select" id="cf-topic" name="topic">
+              <option>{t('contact.topic.order')}</option>
+              <option>{t('contact.topic.size')}</option>
+              <option>{t('contact.topic.wholesale')}</option>
+              <option>{t('contact.topic.other')}</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="cf-msg">{t('contact.message')}</label>
+            <textarea class="textarea" id="cf-msg" name="message" maxlength="1500" aria-describedby="cf-msg-err"></textarea>
+            <p class="field-error" id="cf-msg-err" data-err="message" data-msg={t('contact.err.message')}></p>
+          </div>
+          <button class="btn" type="submit"><Icon name="mail" /> {t('contact.send')}</button>
+          <p class="contact-form__ok" data-ok hidden role="status">
+            <Icon name="check" /> {t('contact.ok')} <a href={`mailto:${c.email}`} dir="ltr">{c.email}</a>
+          </p>
+        </form>
+      </section>
+      <aside class="page__card page__card--tint">
+        <h2>{t('contact.wholesaleTitle')}</h2>
+        <p>{t('contact.wholesaleText')}</p>
+        <a class="link-arrow" href={`mailto:${c.email}?subject=${encodeURIComponent(locale === 'ar' ? 'طلب بالجملة' : 'Wholesale enquiry')}`}>
+          <Icon name="mail" /> <span dir="ltr">{c.email}</span>
+        </a>
+      </aside>
+    </div>
+  </div>
+</Base>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-contact-form]');
+  if (form) {
+    const show = (name: string, on: boolean) => {
+      const err = form.querySelector<HTMLElement>(`[data-err="${name}"]`)!;
+      const field = form.elements.namedItem(name) as HTMLInputElement;
+      err.textContent = on ? err.dataset.msg ?? '' : '';
+      field.setAttribute('aria-invalid', String(on));
+    };
+    form.addEventListener('input', (e) => {
+      const el = e.target as HTMLInputElement;
+      if (el.getAttribute('aria-invalid') === 'true') show(el.name, false);
+    });
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const name = String(fd.get('name') ?? '').trim();
+      const message = String(fd.get('message') ?? '').trim();
+      const topic = String(fd.get('topic') ?? '');
+      const badName = name.length < 2;
+      const badMsg = message.length < 10;
+      show('name', badName);
+      show('message', badMsg);
+      if (badName || badMsg) {
+        (form.elements.namedItem(badName ? 'name' : 'message') as HTMLElement).focus();
+        return;
+      }
+      // Nothing is sent to a server: we hand the message to the visitor's email app.
+      const subject = `${topic} — ${name}`;
+      const body = `${message}\n\n— ${name}`;
+      window.location.href = `mailto:${form.dataset.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      form.querySelector<HTMLElement>('[data-ok]')!.hidden = false;
+    });
+  }
+</script>

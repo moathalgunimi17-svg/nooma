@@ -1,0 +1,49 @@
+---
+import { Image } from 'astro:assets';
+import Base from '~/layouts/Base.astro';
+import '~/styles/shop.css';
+import '~/styles/product.css';
+import '~/styles/content.css';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import SizeTable from '~/components/SizeTable.astro';
+import Icon from '~/components/Icon.astro';
+import { site, type Locale } from '~/config/site';
+import { useT } from '~/i18n/ui';
+import { href, routes } from '~/i18n/routes';
+import { art, artAlt } from '~/lib/art';
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const t = useT(locale);
+---
+<Base locale={locale} path={routes.sizeGuide} title={`${t('size.title')} | ${t('meta.siteName')}`} description={t('size.desc')}>
+  <div class="container page">
+    <Breadcrumbs items={[{ label: t('common.home'), href: href(locale) }, { label: t('size.title') }]} locale={locale} />
+    <header class="page__head">
+      <div>
+        <h1>{t('size.title')}</h1>
+        <p class="page__lead">{t('size.intro')}</p>
+      </div>
+      <Image class="page__art" src={art['kid-brushing']} alt={artAlt['kid-brushing'][locale]} width={180} densities={[1, 2]} loading="eager" />
+    </header>
+
+    <div class="page__split">
+      <section aria-labelledby="table-title">
+        <h2 id="table-title" class="visually-hidden">{t('size.title')}</h2>
+        <SizeTable locale={locale} />
+      </section>
+      <aside class="page__card">
+        <h2>{t('size.how')}</h2>
+        <ol class="measure" role="list">
+          <li><span>1</span>{t('size.how.1')}</li>
+          <li><span>2</span>{t('size.how.2')}</li>
+          <li><span>3</span>{t('size.how.3')}</li>
+        </ol>
+        <div class="page__help">
+          <h3>{t('size.help')}</h3>
+          <p>{t('size.helpText')}</p>
+          <a class="btn btn--wa" href={site.contact.whatsappLink} target="_blank" rel="noopener"><Icon name="whatsapp" /> {t('contact.wa')}</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</Base>

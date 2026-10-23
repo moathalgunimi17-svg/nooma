@@ -1,0 +1,28 @@
+---
+/**
+ * WhatsApp handoff, presented on Nooma's star-shaped note card.
+ * Never says "order placed" — the order is confirmed only by the team's reply.
+ */
+import type { Locale } from '~/config/site';
+import { useT } from '~/i18n/ui';
+import Icon from './Icon.astro';
+import starNote from '~/assets/brand/star-note.svg';
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const t = useT(locale);
+---
+<dialog class="order-dialog" id="order-dialog" aria-labelledby="order-title" aria-describedby="order-text">
+  <button class="icon-btn order-dialog__close" type="button" data-close><Icon name="close" /><span class="visually-hidden">{t('a11y.close')}</span></button>
+  <div class="order-dialog__card" aria-hidden="true">
+    <img src={starNote.src} width="220" height="210" alt="" />
+  </div>
+  <h2 id="order-title">{t('order.title')}</h2>
+  <p id="order-text" class="muted" data-order-text>{t('order.text')}</p>
+  <label class="order-dialog__label" for="order-message">{t('order.preview')}</label>
+  <textarea class="textarea order-dialog__msg" id="order-message" readonly rows="8" data-order-message></textarea>
+  <div class="order-dialog__actions">
+    <a class="btn btn--wa" data-order-open target="_blank" rel="noopener" href="#"><Icon name="whatsapp" /> {t('order.open')}</a>
+    <button class="btn btn--ghost" type="button" data-order-copy><Icon name="copy" /> <span class="btn__label">{t('order.copy')}</span></button>
+  </div>
+  <p class="order-dialog__after"><Icon name="info" /> {t('order.after')}</p>
+</dialog>

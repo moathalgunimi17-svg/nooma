@@ -1,0 +1,40 @@
+---
+import type { Locale } from '~/config/site';
+import { useT } from '~/i18n/ui';
+import { sizes } from '~/data/catalog';
+import { sizing, sizingConfirmed } from '~/data/sizing';
+import Pending from './Pending.astro';
+interface Props { locale: Locale; only?: string[] }
+const { locale, only } = Astro.props;
+const t = useT(locale);
+const rows = sizes.filter((s) => !only || only.includes(s.id));
+const cell = (v: string | null) => v ?? t('size.tbc');
+---
+<div class="size-table">
+  {!sizingConfirmed && <Pending locale={locale} />}
+  <div class="size-table__scroll" tabindex="0" role="region" aria-label={t('size.title')}>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">{t('size.col.size')}</th>
+          <th scope="col">{t('size.col.height')}</th>
+          <th scope="col">{t('size.col.chest')}</th>
+          <th scope="col">{t('size.col.waist')}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((s) => {
+          const m = sizing[s.id];
+          return (
+            <tr>
+              <th scope="row">{s.label[locale]}</th>
+              <td class:list={{ tbc: !m?.height }}>{cell(m?.height ?? null)}</td>
+              <td class:list={{ tbc: !m?.chest }}>{cell(m?.chest ?? null)}</td>
+              <td class:list={{ tbc: !m?.waist }}>{cell(m?.waist ?? null)}</td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  </div>
+</div>

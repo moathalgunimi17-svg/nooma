@@ -1,0 +1,109 @@
+---
+import { Image } from 'astro:assets';
+import type { Locale } from '~/config/site';
+import { site } from '~/config/site';
+import { useT } from '~/i18n/ui';
+import { alternate, href, routes } from '~/i18n/routes';
+import { art, artAlt, liveCategories } from '~/lib/art';
+import Icon from './Icon.astro';
+import BagIcon from './BagIcon.astro';
+import logoAr from '~/assets/brand/logo-ar.png';
+import logoEn from '~/assets/brand/logo-en.png';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const t = useT(locale);
+const other: Locale = locale === 'ar' ? 'en' : 'ar';
+const langHref = alternate(Astro.url.pathname, other);
+const logo = locale === 'ar' ? logoAr : logoEn;
+const cats = liveCategories();
+const here = Astro.url.pathname;
+const isCurrent = (p: string) => (here === href(locale, p) ? 'page' : undefined);
+---
+<header class="site-header" data-header>
+  <div class="container header__bar">
+    <button class="icon-btn header__menu" type="button" data-open="mobile-menu" aria-haspopup="dialog">
+      <Icon name="menu" />
+      <span class="visually-hidden">{t('a11y.menu')}</span>
+    </button>
+
+    <a class="header__logo" href={href(locale)} aria-label={t('a11y.home')}>
+      <Image src={logo} alt="" width={150} densities={[1, 2]} loading="eager" fetchpriority="high" />
+    </a>
+
+    <nav class="header__nav" aria-label={t('nav.shop')}>
+      <ul role="list">
+        <li><a href={href(locale, routes.shop)} aria-current={isCurrent(routes.shop)}>{t('nav.allProducts')}</a></li>
+        <li class="has-panel">
+          <button type="button" class="nav-disclosure" aria-expanded="false" aria-controls="nav-collections">
+            {t('nav.collections')} <Icon name="chevronDown" />
+          </button>
+          <div class="nav-panel" id="nav-collections" hidden>
+            <ul role="list" class="nav-panel__grid">
+              {cats.map((c) => (
+                <li>
+                  <a class="nav-tile" href={href(locale, routes.collection(c.slug))} style={`--tint: var(--tint-${c.tint})`}>
+                    <Image src={art[c.art]} alt="" width={96} densities={[1, 2]} />
+                    <span><strong>{c.name[locale]}</strong><small>{c.blurb[locale]}</small></span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </li>
+        <li><a href={href(locale, routes.about)} aria-current={isCurrent(routes.about)}>{t('nav.about')}</a></li>
+        <li><a href={href(locale, routes.contact)} aria-current={isCurrent(routes.contact)}>{t('nav.contact')}</a></li>
+      </ul>
+    </nav>
+
+    <div class="header__actions">
+      <button class="icon-btn" type="button" data-open="search-dialog" aria-haspopup="dialog">
+        <Icon name="search" />
+        <span class="visually-hidden">{t('nav.search')}</span>
+      </button>
+      <a class="header__lang" href={langHref} hreflang={other} lang={other} data-lang-switch>
+        <span aria-hidden="true">{t('nav.langCode')}</span>
+        <span class="visually-hidden">{t('nav.lang')}</span>
+      </a>
+      <button class="bag-btn" type="button" data-open-cart aria-haspopup="dialog">
+        <BagIcon />
+        <span class="bag-btn__count" data-cart-count aria-hidden="true">0</span>
+        <span class="visually-hidden" data-cart-label>{t('a11y.cartCount', { n: 0 })}</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<dialog class="sheet sheet--start" id="mobile-menu" aria-label={t('a11y.menu')}>
+  <div class="sheet__head">
+    <Image src={logo} alt={site.name[locale]} width={110} densities={[1, 2]} />
+    <button class="icon-btn" type="button" data-close>
+      <Icon name="close" /><span class="visually-hidden">{t('a11y.closeMenu')}</span>
+    </button>
+  </div>
+  <nav class="sheet__body mobile-nav" aria-label={t('a11y.menu')}>
+    <a class="mobile-nav__big" href={href(locale, routes.shop)}>{t('nav.allProducts')}</a>
+    <p class="mobile-nav__label">{t('nav.collections')}</p>
+    <ul role="list" class="mobile-nav__tiles">
+      {cats.map((c) => (
+        <li>
+          <a class="nav-tile" href={href(locale, routes.collection(c.slug))} style={`--tint: var(--tint-${c.tint})`}>
+            <Image src={art[c.art]} alt={artAlt[c.art][locale]} width={72} densities={[1, 2]} />
+            <span><strong>{c.name[locale]}</strong></span>
+          </a>
+        </li>
+      ))}
+    </ul>
+    <ul role="list" class="mobile-nav__links">
+      <li><a href={href(locale, routes.about)}>{t('nav.about')}</a></li>
+      <li><a href={href(locale, routes.sizeGuide)}>{t('nav.sizeGuide')}</a></li>
+      <li><a href={href(locale, routes.faq)}>{t('faq.title')}</a></li>
+      <li><a href={href(locale, routes.contact)}>{t('nav.contact')}</a></li>
+      <li><a href={langHref} hreflang={other} lang={other} data-lang-switch><Icon name="globe" /> {t('nav.lang')}</a></li>
+    </ul>
+    <div class="mobile-nav__contact">
+      <a class="btn btn--wa btn--block" href={site.contact.whatsappLink} target="_blank" rel="noopener"><Icon name="whatsapp" /> {t('hero.whatsapp')}</a>
+      <a class="btn btn--ghost btn--block" href={site.contact.instagramUrl} target="_blank" rel="noopener"><Icon name="instagram" /> <bdi dir="ltr">@{site.contact.instagramHandle}</bdi></a>
+    </div>
+  </nav>
+</dialog>

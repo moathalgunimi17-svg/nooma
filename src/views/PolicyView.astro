@@ -1,0 +1,44 @@
+---
+import Base from '~/layouts/Base.astro';
+import '~/styles/shop.css';
+import '~/styles/content.css';
+import Breadcrumbs from '~/components/Breadcrumbs.astro';
+import Pending from '~/components/Pending.astro';
+import Icon from '~/components/Icon.astro';
+import { site, type Locale } from '~/config/site';
+import { useT, type UIKey } from '~/i18n/ui';
+import { href, routes } from '~/i18n/routes';
+import { policies, type PolicyDoc } from '~/data/policies';
+interface Props { locale: Locale; doc: PolicyDoc['key'] }
+const { locale, doc } = Astro.props;
+const t = useT(locale);
+const p = policies[doc];
+const title = t(`policy.${doc}` as UIKey);
+const desc = t(`policy.${doc}Desc` as UIKey);
+const others = (['shipping', 'returns', 'privacy', 'terms'] as const).filter((k) => k !== doc);
+---
+<Base locale={locale} path={routes[doc]} title={`${title} | ${t('meta.siteName')}`} description={desc}>
+  <div class="container page">
+    <Breadcrumbs items={[{ label: t('common.home'), href: href(locale) }, { label: title }]} locale={locale} />
+    <div class="policy">
+      <article class="prose">
+        <h1>{title}</h1>
+        <Pending locale={locale} />
+        <h2>{t('policy.known')}</h2>
+        <ul>{p.known.map((k) => <li>{k[locale]}</li>)}</ul>
+        <h2>{t('policy.needs')}</h2>
+        <ul class="policy__needs" role="list">
+          {p.needs.map((n) => <li><Icon name="info" /> {n[locale]}</li>)}
+        </ul>
+      </article>
+      <aside class="page__card policy__aside">
+        <h2>{t('nav.help')}</h2>
+        <ul role="list" class="policy__links">
+          {others.map((k) => <li><a href={href(locale, routes[k])}>{t(`policy.${k}` as UIKey)}</a></li>)}
+          <li><a href={href(locale, routes.faq)}>{t('faq.title')}</a></li>
+        </ul>
+        <a class="btn btn--wa btn--block" href={site.contact.whatsappLink} target="_blank" rel="noopener"><Icon name="whatsapp" /> {t('contact.wa')}</a>
+      </aside>
+    </div>
+  </div>
+</Base>

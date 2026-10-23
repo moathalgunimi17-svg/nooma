@@ -1,0 +1,142 @@
+---
+import '@fontsource-variable/readex-pro';
+import '@fontsource-variable/baloo-bhaijaan-2';
+import '@fontsource/nanum-pen-script/latin-400.css';
+import '~/styles/tokens.css';
+import '~/styles/base.css';
+import '~/styles/chrome.css';
+import '~/styles/commerce.css';
+
+import { site, type Locale } from '~/config/site';
+import { useT, dict } from '~/i18n/ui';
+import { href, routes } from '~/i18n/routes';
+import { clientCatalog } from '~/lib/art';
+import stripes from '~/assets/brand/stripes.svg';
+import ogFallback from '~/assets/brand/logo-ar.png';
+import { getImage } from 'astro:assets';
+
+import Announcement from '~/components/Announcement.astro';
+import Header from '~/components/Header.astro';
+import Footer from '~/components/Footer.astro';
+import CartDrawer from '~/components/CartDrawer.astro';
+import SearchDialog from '~/components/SearchDialog.astro';
+import OrderDialog from '~/components/OrderDialog.astro';
+import QuickAdd from '~/components/QuickAdd.astro';
+
+interface Props {
+  locale: Locale;
+  /** Locale-free path of this page, e.g. "shop/". Used for canonical + hreflang. */
+  path: string;
+  title: string;
+  description: string;
+  ogImage?: string;
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  noindex?: boolean;
+}
+
+const { locale, path, title, description, ogImage, jsonLd, noindex } = Astro.props;
+const t = useT(locale);
+const dir = locale === 'ar' ? 'rtl' : 'ltr';
+const site_ = Astro.site ?? new URL(site.domain);
+// Any deploy that isn't on Nooma's own domain (e.g. the GitHub Pages preview) stays out of search results.
+const isPreview = !site_.hostname.endsWith(new URL(site.domain).hostname);
+const hideFromSearch = noindex || isPreview;
+const canonical = new URL(href(locale, path), site_).href;
+const altAr = new URL(href('ar', path), site_).href;
+const altEn = new URL(href('en', path), site_).href;
+const og = ogImage ?? (await getImage({ src: ogFallback, width: 900, format: 'jpg', background: '#FFF6F5' })).src;
+const ogAbs = new URL(og, site_).href;
+
+const catalog = await clientCatalog();
+
+/** Only the strings the browser scripts need. */
+const clientKeys = [
+  'cart.remove', 'cart.removed', 'cart.undo', 'cart.viewBag', 'cart.updated', 'cart.items', 'product.chooseSize', 'product.added',
+  'product.priceTbc', 'product.sample', 'product.decrease', 'product.increase', 'product.qty',
+  'order.copied', 'order.copyFail', 'order.copy', 'order.text', 'order.textCopy',
+  'order.msg.greeting', 'order.msg.size', 'order.msg.colour', 'order.msg.qty', 'order.msg.subtotal',
+  'order.msg.priceTbc', 'order.msg.shipping', 'order.msg.gift', 'order.msg.sample', 'order.msg.closing', 'order.single',
+  'search.empty', 'search.results', 'a11y.cartCount', 'shop.count', 'shop.count1', 'shop.count2', 'shop.remove',
+  'product.outOfStock', 'product.colours',
+] as const;
+const strings = Object.fromEntries(clientKeys.map((k) => [k, dict[locale][k]]));
+
+const clientConfig = {
+  locale,
+  whatsappLink: site.contact.whatsappLink,
+  whatsappNumber: site.contact.whatsappNumber,
+  maxQty: site.commerce.maxQtyPerLine,
+  sample: site.sampleCatalog,
+  productBase: href(locale, 'products/'),
+  cartUrl: href(locale, routes.cart),
+  strings,
+};
+
+const orgLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'Nooma',
+  alternateName: 'نُومة',
+  url: site.domain,
+  email: site.contact.email,
+  sameAs: [site.contact.instagramUrl],
+};
+const safeJson = (v: unknown) => JSON.stringify(v).replaceAll('<', String.fromCharCode(92) + 'u003c');
+const ld = [orgLd, ...(jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [])];
+---
+<!doctype html>
+<html lang={locale} dir={dir} data-locale={locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {hideFromSearch ? (
+      <meta name="robots" content="noindex, follow" />
+    ) : (
+      <>
+        <link rel="canonical" href={canonical} />
+        <link rel="alternate" hreflang="ar-OM" href={altAr} />
+        <link rel="alternate" hreflang="en" href={altEn} />
+        <link rel="alternate" hreflang="x-default" href={altAr} />
+      </>
+    )}
+    <meta name="theme-color" content="#FFF6F5" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={locale === 'ar' ? 'نُومة' : 'Nooma'} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogAbs} />
+    <meta property="og:locale" content={locale === 'ar' ? 'ar_OM' : 'en_US'} />
+    <meta property="og:locale:alternate" content={locale === 'ar' ? 'en_US' : 'ar_OM'} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" type="image/png" sizes="64x64" href={`${import.meta.env.BASE_URL}favicon.png`} />
+    <link rel="apple-touch-icon" href={`${import.meta.env.BASE_URL}apple-touch-icon.png`} />
+    <link rel="sitemap" href={`${import.meta.env.BASE_URL}sitemap-index.xml`} />
+    <script is:inline>document.documentElement.classList.add('js');</script>
+    <style set:html={`:root{--stripes-url:url("${stripes.src}")}`}></style>
+    {ld.map((o) => <script type="application/ld+json" set:html={safeJson(o)} />)}
+  </head>
+  <body>
+    <a class="skip-link" href="#main">{t('a11y.skip')}</a>
+    <Announcement locale={locale} />
+    <Header locale={locale} />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <Footer locale={locale} />
+    <CartDrawer locale={locale} />
+    <SearchDialog locale={locale} />
+    <QuickAdd locale={locale} />
+    <OrderDialog locale={locale} />
+    <div class="toast-region" role="status" aria-live="polite" aria-atomic="true" id="toast"></div>
+    <div class="visually-hidden" aria-live="polite" id="sr-live"></div>
+
+    <script type="application/json" id="nooma-catalog" set:html={safeJson(catalog)} />
+    <script type="application/json" id="nooma-config" set:html={safeJson(clientConfig)} />
+    <script>
+      import '~/scripts/main';
+    </script>
+  </body>
+</html>

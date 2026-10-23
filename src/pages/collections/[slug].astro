@@ -1,0 +1,9 @@
+---
+import ShopView from '~/views/ShopView.astro';
+import { liveCategories } from '~/lib/art';
+export function getStaticPaths() {
+  return liveCategories().map((c) => ({ params: { slug: c.slug }, props: { id: c.id } }));
+}
+const { id } = Astro.props;
+---
+<ShopView locale="ar" categoryId={id} />

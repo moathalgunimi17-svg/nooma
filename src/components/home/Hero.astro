@@ -1,0 +1,107 @@
+---
+/**
+ * "A window into Nooma's dream world": the packaging stripes become the
+ * wallpaper of a child's room; through an arched window the sun mascot
+ * shines — press the bedtime switch and it sets, the moon rises, stars come out.
+ */
+import { Image } from 'astro:assets';
+import { site, type Locale } from '~/config/site';
+import { useT } from '~/i18n/ui';
+import { href, routes } from '~/i18n/routes';
+import { artAlt } from '~/lib/art';
+import Icon from '../Icon.astro';
+import Stars from '../Stars.astro';
+import sun from '~/assets/brand/sun.png';
+import swoosh from '~/assets/brand/swoosh.png';
+import mirror from '~/assets/brand/mirror-siblings.png';
+import catCurled from '~/assets/brand/cat-curled.svg';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const t = useT(locale);
+---
+<section class="hero" data-hero data-scene="day" aria-labelledby="hero-title">
+  <div class="container hero__grid">
+    <div class="hero__copy">
+      <p class="hero__kicker"><Icon name="sparkle" /> {t('hero.kicker')}</p>
+      <h1 id="hero-title" class="hero__title">{t('hero.title')}</h1>
+      <p class="hero__text">{t('hero.text')}</p>
+      <div class="hero__ctas">
+        <a class="btn" href={href(locale, routes.shop)}>{t('hero.cta')} <Icon name="arrow" class="flip-rtl" /></a>
+        <a class="btn btn--ghost" href="#collections">{t('hero.cta2')}</a>
+      </div>
+      <ul role="list" class="hero__meta">
+        {site.claims.shipsWorldwide && <li><Icon name="globe" /> {t('hero.worldwide')}</li>}
+        <li><a href={site.contact.whatsappLink} target="_blank" rel="noopener"><Icon name="whatsapp" /> {t('hero.whatsapp')}</a></li>
+      </ul>
+    </div>
+
+    <div class="hero__room wallpaper" data-parallax-root>
+      <div class="hero__window">
+        <div class="hero__sky hero__sky--day" aria-hidden="true"></div>
+        <div class="hero__sky hero__sky--night" aria-hidden="true"></div>
+        <Stars count={16} seed={3} class="hero__stars" />
+        <div class="hero__sun-wrap" data-depth="14" aria-hidden="true">
+          <Image class="hero__sun" src={sun} alt="" width={260} densities={[1, 2]} loading="eager" />
+        </div>
+        <svg class="hero__moon" data-depth="10" viewBox="0 0 120 120" aria-hidden="true">
+          <path d="M86 88A44 44 0 0 1 38 20a46 46 0 1 0 48 68z" />
+          <path class="hero__moon-face" d="M58 70q5 4 10 0M50 58h.01M70 62h.01" />
+        </svg>
+        <Image class="hero__swoosh" data-depth="6" src={swoosh} alt="" width={340} densities={[1, 2]} loading="eager" aria-hidden="true" />
+        <div class="hero__sill" aria-hidden="true"></div>
+      </div>
+      <figure class="hero__mirror" data-depth="-8">
+        <span class="hero__nail" aria-hidden="true"></span>
+        <Image src={mirror} alt={artAlt['mirror-siblings'][locale]} width={250} densities={[1, 2]} loading="eager" />
+      </figure>
+      <img class="hero__cat" src={catCurled.src} width="150" height="139" alt="" aria-hidden="true" />
+      <p class="hero__greeting" aria-live="polite">
+        <span class="hero__greeting-day">{t('hero.dayLine')}</span>
+        <span class="hero__greeting-night">{t('hero.nightLine')}</span>
+      </p>
+      <button class="hero__toggle" type="button" data-scene-toggle>
+        <span class="hero__toggle-track" aria-hidden="true"><span class="hero__toggle-knob"></span></span>
+        <span class="hero__toggle-label hero__toggle-label--day"><Icon name="moon" /> {t('hero.toNight')}</span>
+        <span class="hero__toggle-label hero__toggle-label--night"><Icon name="sun" /> {t('hero.toDay')}</span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { reducedMotion } from '~/scripts/env';
+
+  const hero = document.querySelector<HTMLElement>('[data-hero]');
+  const toggle = hero?.querySelector<HTMLButtonElement>('[data-scene-toggle]');
+  if (hero && toggle) {
+    const set = (night: boolean) => {
+      hero.dataset.scene = night ? 'night' : 'day';
+    };
+    // After dark in the visitor's own time zone, the room is already at bedtime.
+    const h = new Date().getHours();
+    set(h >= 19 || h < 5);
+    toggle.addEventListener('click', () => set(hero.dataset.scene !== 'night'));
+
+    // Gentle pointer parallax (desktop, fine pointers only). Uses translate,
+    // so physical clientX works in both RTL and LTR.
+    const root = hero.querySelector<HTMLElement>('[data-parallax-root]');
+    if (root && !reducedMotion() && window.matchMedia('(pointer: fine)').matches) {
+      const layers = [...root.querySelectorAll<HTMLElement>('[data-depth]')];
+      let raf = 0;
+      root.addEventListener('pointermove', (e) => {
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => {
+          const r = root.getBoundingClientRect();
+          const x = (e.clientX - r.left) / r.width - 0.5;
+          const y = (e.clientY - r.top) / r.height - 0.5;
+          for (const l of layers) {
+            const d = Number(l.dataset.depth);
+            l.style.translate = `${(x * d).toFixed(1)}px ${(y * d).toFixed(1)}px`;
+          }
+        });
+      });
+      root.addEventListener('pointerleave', () => layers.forEach((l) => (l.style.translate = '')));
+    }
+  }
+</script>

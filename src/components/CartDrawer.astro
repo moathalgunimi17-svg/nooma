@@ -1,0 +1,41 @@
+---
+import type { Locale } from '~/config/site';
+import { useT } from '~/i18n/ui';
+import Icon from './Icon.astro';
+import BagIcon from './BagIcon.astro';
+import CartPanel from './CartPanel.astro';
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const t = useT(locale);
+---
+<dialog class="sheet sheet--end cart-drawer" id="cart-drawer" aria-labelledby="cart-drawer-title">
+  <div class="sheet__head">
+    <h2 id="cart-drawer-title" class="cart-drawer__title"><BagIcon /> {t('cart.title')} <span class="chip" data-cart-items></span></h2>
+    <button class="icon-btn" type="button" data-close>
+      <Icon name="close" /><span class="visually-hidden">{t('a11y.close')}</span>
+    </button>
+  </div>
+  <div class="sheet__body">
+    <CartPanel locale={locale} variant="drawer" />
+  </div>
+</dialog>
+
+<template id="tpl-cart-line">
+  <li class="cart-line">
+    <a class="cart-line__media" data-l-link tabindex="-1" aria-hidden="true"><img data-l-img alt="" width="80" height="96" loading="lazy" /></a>
+    <div class="cart-line__info">
+      <a class="cart-line__name" data-l-link data-l-name></a>
+      <p class="cart-line__meta" data-l-meta></p>
+      <span class="chip chip--sample" data-l-sample hidden></span>
+      <div class="cart-line__row">
+        <div class="stepper stepper--sm" role="group" data-l-stepper>
+          <button type="button" class="stepper__btn" data-l-dec><Icon name="minus" /><span class="visually-hidden" data-l-dec-label></span></button>
+          <input class="stepper__input" lang="en" dir="ltr" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" min="1" data-l-qty />
+          <button type="button" class="stepper__btn" data-l-inc><Icon name="plus" /><span class="visually-hidden" data-l-inc-label></span></button>
+        </div>
+        <strong class="cart-line__price" data-l-price></strong>
+      </div>
+    </div>
+    <button type="button" class="icon-btn cart-line__remove" data-l-remove><Icon name="trash" /><span class="visually-hidden" data-l-remove-label></span></button>
+  </li>
+</template>

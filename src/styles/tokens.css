@@ -1,0 +1,105 @@
+/* Hallmark · genre: playful · macrostructure: Marquee Hero → Feature Stack (storefront) · theme: custom
+ * vibe: "bedtime storybook, hand-drawn stripes, smiling sun"
+ * paper oklch(98% 0.010 25) ivory · accent oklch(50.2% 0.073 273) Nooma indigo (sampled from the wordmark)
+ * display: Baloo Bhaijaan 2 (rounded, echoes the Tufuli Arabic logo) · body: Readex Pro · sign-off: Nanum Pen Script (the brand's own Latin face)
+ * axes: light / rounded-sans / cool · nav: N12-style announcement + sticky bar · footer: Ft5 statement (night sky)
+ * Override on purpose: this client's taste reads restrained motion as "no motion" —
+ * the motion budget is above Hallmark's default three primitives (see motion section in base.css).
+ * Every colour below was sampled from the supplied PDFs (bag, cards, art tags).
+ */
+:root {
+  /* — Brand colour (sampled) — */
+  --color-paper: oklch(98% 0.010 25);          /* #FFF6F5 bag & card ground */
+  --color-paper-2: oklch(96.4% 0.016 40);      /* slightly warmer surface */
+  --color-peach: oklch(95.3% 0.028 62);        /* #FEECDD bag under-layer */
+  --color-lavender: oklch(87.4% 0.024 273);    /* #D0D5E6 hand-drawn stripes */
+  --color-lavender-2: oklch(93.4% 0.014 273);
+  --color-indigo: oklch(50.2% 0.073 273);      /* #56618E wordmark */
+  --color-ink: oklch(39.8% 0.077 275);         /* body text, 8.9:1 on paper */
+  --color-ink-muted: oklch(47% 0.055 275);     /* secondary text, ≥5:1 on paper */
+  --color-night: oklch(31% 0.068 275);         /* bedtime sky + footer */
+  --color-night-2: oklch(38% 0.07 278);
+  --color-blush: oklch(82.5% 0.086 23);        /* #F9B0AB sparkles & stars */
+  --color-blush-2: oklch(92.5% 0.04 20);
+  --color-rose: oklch(52.2% 0.126 357);        /* pink as TEXT (5.5:1) */
+  --color-butter: oklch(91.2% 0.085 90);       /* sun mascot */
+  --color-butter-2: oklch(95.6% 0.05 92);
+  --color-sun-deep: oklch(80% 0.12 80);
+  --color-on-indigo: var(--color-paper);
+  --color-line: oklch(87.4% 0.024 273 / 0.9);
+  --color-line-soft: oklch(87.4% 0.024 273 / 0.5);
+  --color-success: oklch(52% 0.09 160);
+  --color-danger: oklch(50% 0.15 22);
+  --color-danger-bg: oklch(95% 0.03 22);
+  --color-pending: oklch(50% 0.1 70);
+  --color-pending-bg: oklch(95% 0.05 85);
+  --color-focus: oklch(52.2% 0.126 357);
+  --color-scrim: oklch(25% 0.05 275 / 0.42);
+
+  /* tints for category / product panels */
+  --tint-blush: var(--color-blush-2);
+  --tint-lavender: var(--color-lavender-2);
+  --tint-butter: var(--color-butter-2);
+  --tint-peach: var(--color-peach);
+
+  /* — Type — */
+  --font-display: 'Baloo Bhaijaan 2 Variable', 'Readex Pro Variable', system-ui, sans-serif;
+  --font-body: 'Readex Pro Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-hand: 'Nanum Pen Script', 'Comic Neue', cursive;
+
+  --text-xs: 0.8125rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-md: 1.0625rem;
+  --text-lg: 1.25rem;
+  --text-xl: clamp(1.375rem, 1.2rem + 0.6vw, 1.625rem);
+  --text-2xl: clamp(1.75rem, 1.4rem + 1.4vw, 2.375rem);
+  --text-3xl: clamp(2rem, 1.5rem + 2.2vw, 3.125rem);
+  --text-display: clamp(2.5rem, 1.6rem + 4vw, 4.75rem);
+
+  --leading-body: 1.75;
+  --leading-tight: 1.3;
+
+  /* — Space (4pt) — */
+  --space-3xs: 0.25rem;
+  --space-2xs: 0.5rem;
+  --space-xs: 0.75rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2rem;
+  --space-xl: 3rem;
+  --space-2xl: 4rem;
+  --space-3xl: clamp(4rem, 3rem + 4vw, 7rem);
+  --gutter: clamp(1rem, 0.6rem + 2vw, 2.5rem);
+  --container: 76rem;
+
+  /* — Shape — */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 24px;
+  --radius-xl: 36px;
+  --radius-pill: 999px;
+  --rule: 1.5px solid var(--color-line);
+
+  --shadow-sm: 0 1px 2px oklch(40% 0.07 275 / 0.08), 0 2px 8px -2px oklch(40% 0.07 275 / 0.08);
+  --shadow-md: 0 2px 4px oklch(40% 0.07 275 / 0.06), 0 12px 28px -12px oklch(40% 0.07 275 / 0.22);
+  --shadow-lg: 0 4px 8px oklch(40% 0.07 275 / 0.06), 0 28px 60px -24px oklch(40% 0.07 275 / 0.35);
+
+  /* — Motion — */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in: cubic-bezier(0.55, 0, 1, 0.45);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-soft-spring: cubic-bezier(0.34, 1.4, 0.64, 1); /* character moments only */
+  --dur-fast: 150ms;
+  --dur-base: 240ms;
+  --dur-slow: 420ms;
+  --dur-scene: 1100ms;
+
+  --header-h: 4.25rem;
+}
+
+:root[lang='en'] {
+  --text-display: clamp(2.5rem, 1.6rem + 4.2vw, 5rem);
+  --leading-body: 1.65;
+  --leading-tight: 1.12;
+}

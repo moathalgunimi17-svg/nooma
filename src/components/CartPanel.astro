@@ -1,0 +1,52 @@
+---
+/**
+ * Cart contents, rendered client-side from the cart store into any
+ * [data-cart-root]. Used inside the drawer and on the /cart/ page.
+ */
+import { site, type Locale } from '~/config/site';
+import { useT } from '~/i18n/ui';
+import { href, routes } from '~/i18n/routes';
+import Icon from './Icon.astro';
+import catCurled from '~/assets/brand/cat-curled.svg';
+
+interface Props { locale: Locale; variant: 'drawer' | 'page' }
+const { locale, variant } = Astro.props;
+const t = useT(locale);
+const id = `gift-${variant}`;
+const EmptyHeading = variant === 'page' ? 'h2' : 'h3';
+---
+<div class:list={['cart', `cart--${variant}`]} data-cart-root data-variant={variant}>
+  <div class="cart__empty" data-cart-empty hidden>
+    <img class="cart__empty-cat" src={catCurled.src} width="180" height="167" alt="" loading="lazy" />
+    <EmptyHeading>{t('cart.emptyTitle')}</EmptyHeading>
+    <p class="muted">{t('cart.emptyText')}</p>
+    <a class="btn" href={href(locale, routes.shop)}>{t('cart.continue')}</a>
+  </div>
+
+  <ul role="list" class="cart__lines" data-cart-lines></ul>
+
+  <div class="cart__summary" data-cart-summary hidden>
+    {site.commerce.giftNote && (
+      <details class="cart__gift">
+        <summary><Icon name="gift" /> {t('cart.gift')}</summary>
+        <div class="field">
+          <label for={id}>{t('cart.giftLabel')}</label>
+          <textarea class="textarea" id={id} maxlength="240" rows="3" data-gift-note aria-describedby={`${id}-hint`}></textarea>
+          <small id={`${id}-hint`} class="muted">{t('cart.giftHint')}</small>
+        </div>
+      </details>
+    )}
+    <dl class="cart__totals">
+      <div><dt>{t('cart.subtotal')}</dt><dd data-cart-subtotal>—</dd></div>
+      <div><dt>{t('cart.shipping')}</dt><dd class="muted">{t('cart.shippingTbc')}</dd></div>
+      <div class="cart__total"><dt>{t('cart.total')}</dt><dd data-cart-total>—</dd></div>
+    </dl>
+    <button class="btn btn--wa btn--block" type="button" data-checkout>
+      <Icon name="whatsapp" /> <span class="btn__label">{t('cart.checkout')}</span>
+    </button>
+    <p class="cart__note"><Icon name="info" /> {t('cart.note')}</p>
+    {variant === 'drawer' && (
+      <a class="link-arrow cart__page-link" href={href(locale, routes.cart)}>{t('cart.viewBag')} <Icon name="arrow" /></a>
+    )}
+  </div>
+</div>

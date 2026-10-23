@@ -1,0 +1,37 @@
+---
+import type { Locale } from '~/config/site';
+import { useT } from '~/i18n/ui';
+import Icon from './Icon.astro';
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const t = useT(locale);
+---
+<dialog class="sheet sheet--bottom quick-add" id="quick-add" aria-labelledby="qa-title">
+  <form class="quick-add__form" data-quick-form novalidate>
+    <div class="sheet__head">
+      <div class="quick-add__title">
+        <img data-qa-img alt="" width="64" height="76" />
+        <div>
+          <h2 id="qa-title" data-qa-name></h2>
+          <p class="quick-add__price" data-qa-price></p>
+        </div>
+      </div>
+      <button class="icon-btn" type="button" data-close><Icon name="close" /><span class="visually-hidden">{t('a11y.close')}</span></button>
+    </div>
+    <div class="sheet__body">
+      <fieldset class="opt-group" data-qa-colours>
+        <legend>{t('product.colour')}</legend>
+        <div class="swatches" data-qa-colour-list></div>
+      </fieldset>
+      <fieldset class="opt-group" aria-describedby="qa-size-error">
+        <legend>{t('product.size')}</legend>
+        <div class="sizes" data-qa-size-list></div>
+        <p class="field-error" id="qa-size-error" data-qa-error aria-live="assertive"></p>
+      </fieldset>
+      <div class="quick-add__actions">
+        <button class="btn btn--block" type="submit"><Icon name="bag" /> <span class="btn__label">{t('product.add')}</span></button>
+        <a class="link-arrow" data-qa-link href="#">{t('product.view')} <Icon name="arrow" /></a>
+      </div>
+    </div>
+  </form>
+</dialog>

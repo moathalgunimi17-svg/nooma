@@ -1,0 +1,266 @@
+---
+import { Image } from 'astro:assets';
+import Base from '~/layouts/Base.astro';
+import '~/styles/home.css';
+import Hero from '~/components/home/Hero.astro';
+import ProductCard from '~/components/ProductCard.astro';
+import Icon from '~/components/Icon.astro';
+import Stars from '~/components/Stars.astro';
+import { site, type Locale } from '~/config/site';
+import { useT, countLabel, type UIKey } from '~/i18n/ui';
+import { href, routes } from '~/i18n/routes';
+import { art, artAlt, liveCategories } from '~/lib/art';
+import { products } from '~/data/catalog';
+import type { ArtKey } from '~/data/types';
+import logoAr from '~/assets/brand/logo-ar.png';
+import catStretch from '~/assets/brand/cat-stretch.svg';
+import catFace from '~/assets/brand/cat-face.svg';
+import starNote from '~/assets/brand/star-note.svg';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const t = useT(locale);
+const cats = liveCategories();
+const featured = products.filter((p) => p.featured).slice(0, 4);
+const countIn = (id: string) => products.filter((p) => p.categoryId === id).length;
+
+const marquee: UIKey[] = ['marquee.1', 'marquee.2', 'marquee.3', 'marquee.4', 'marquee.5'];
+
+/** The bedtime routine, morning → night, told with the brand's own illustrations. */
+const story: { art: ArtKey; key: 1 | 2 | 3 | 4 | 5 | 6; tint: string; icon: 'sun' | 'moon' }[] = [
+  { art: 'kid-stretch', key: 1, tint: 'butter', icon: 'sun' },
+  { art: 'kid-baking', key: 2, tint: 'peach', icon: 'sun' },
+  { art: 'kid-camera', key: 3, tint: 'lavender', icon: 'sun' },
+  { art: 'kid-facemask', key: 4, tint: 'blush', icon: 'moon' },
+  { art: 'kid-brushing', key: 5, tint: 'lavender', icon: 'moon' },
+  { art: 'kid-reading', key: 6, tint: 'butter', icon: 'moon' },
+];
+// Link a moment to a product only when a product really uses that artwork.
+const productFor = (a: ArtKey) => products.find((p) => p.colourways.some((c) => c.art === a));
+
+const how: { key: UIKey; icon: 'heart' | 'bag' | 'whatsapp' | 'chat' }[] = [
+  { key: 'home.how.1', icon: 'heart' },
+  { key: 'home.how.2', icon: 'bag' },
+  { key: 'home.how.3', icon: 'whatsapp' },
+  { key: 'home.how.4', icon: 'chat' },
+];
+---
+<Base locale={locale} path="" title={t('meta.homeTitle')} description={t('meta.homeDesc')}>
+  <Hero locale={locale} />
+
+  <!-- Marquee: the brand's own words, drifting like a ribbon -->
+  <div class="ribbon" aria-hidden="true">
+    <div class="ribbon__track">
+      {[0, 1].map(() => (
+        <div class="ribbon__group">
+          {marquee.map((k) => (
+            <span class="ribbon__item">{t(k)}<svg viewBox="0 0 24 24"><path d="M12 2c.7 5.4 2.6 7.3 8 8-5.4.7-7.3 2.6-8 8-.7-5.4-2.6-7.3-8-8 5.4-.7 7.3-2.6 8-8z" /></svg></span>
+          ))}
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <!-- Collections as big hang-tags -->
+  <section class="section" id="collections" aria-labelledby="collections-title">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <h2 id="collections-title" data-reveal>{t('home.collectionsTitle')}</h2>
+          <p data-reveal style="--i:1">{t('home.collectionsText')}</p>
+        </div>
+        <a class="link-arrow" href={href(locale, routes.shop)}>{t('home.viewAll')} <Icon name="arrow" /></a>
+      </div>
+      <ul role="list" class="tags">
+        {cats.map((c, i) => (
+          <li data-reveal style={`--i:${i}`}>
+            <a class="tag" href={href(locale, routes.collection(c.slug))} style={`--tint: var(--tint-${c.tint})`}>
+              <span class="tag__hole" aria-hidden="true"></span>
+              <span class="tag__art">
+                <Image src={art[c.art]} alt={artAlt[c.art][locale]} widths={[260, 400]} sizes="(max-width: 720px) 60vw, 300px" />
+              </span>
+              <span class="tag__text">
+                <strong>{c.name[locale]}</strong>
+                <small>{c.blurb[locale]}</small>
+              </span>
+              <span class="tag__go"><Icon name="arrow" class="flip-rtl" /></span>
+              <span class="chip tag__count">{countLabel(locale, countIn(c.id))}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <!-- Featured products -->
+  <section class="section featured" aria-labelledby="featured-title">
+    <div class="featured__bg wallpaper" aria-hidden="true"></div>
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <h2 id="featured-title" data-reveal>{t('home.featuredTitle')}</h2>
+          <p data-reveal style="--i:1">{t('home.featuredText')}</p>
+        </div>
+        <a class="link-arrow" href={href(locale, routes.shop)}>{t('home.viewAll')} <Icon name="arrow" /></a>
+      </div>
+      <div class="pgrid">
+        {featured.map((p, i) => <ProductCard product={p} locale={locale} index={i} />)}
+      </div>
+    </div>
+  </section>
+
+  <!-- Routine: one day, morning to bedtime -->
+  <section class="section routine" aria-labelledby="routine-title" data-routine>
+    <div class="container">
+      <div class="section-head routine__head">
+        <div>
+          <h2 id="routine-title" data-reveal>{t('home.storyTitle')}</h2>
+          <p data-reveal style="--i:1">{t('home.storyText')}</p>
+        </div>
+      </div>
+      <div class="routine__grid">
+        <div class="routine__stage" aria-hidden="true" data-active="0">
+          <div class="routine__dial">
+            <svg class="routine__arc" viewBox="0 0 200 110">
+              <path class="routine__arc-bg" d="M14 100 A86 86 0 0 1 186 100" pathLength="100" />
+              <path class="routine__arc-fg" d="M14 100 A86 86 0 0 1 186 100" pathLength="100" />
+            </svg>
+            <span class="routine__sky-icon routine__sky-icon--sun"><Icon name="sun" /></span>
+            <span class="routine__sky-icon routine__sky-icon--moon"><Icon name="moon" /></span>
+          </div>
+          <div class="routine__frame">
+            {story.map((m, i) => (
+              <div class="routine__slide" data-slide={i} style={`--tint: var(--tint-${m.tint})`}>
+                <Image src={art[m.art]} alt="" widths={[320, 480]} sizes="(max-width: 900px) 70vw, 380px" />
+              </div>
+            ))}
+            <Stars count={10} seed={11} class="routine__stars" />
+          </div>
+        </div>
+        <ol class="routine__steps" role="list">
+          {story.map((m, i) => {
+            const p = productFor(m.art);
+            return (
+              <li class="routine__step" data-step={i} style={`--tint: var(--tint-${m.tint})`}>
+                <span class="routine__mobile-art">
+                  <Image src={art[m.art]} alt={artAlt[m.art][locale]} widths={[240, 360]} sizes="60vw" />
+                </span>
+                <span class="routine__icon"><Icon name={m.icon} /></span>
+                <h3>{t(`home.story.${m.key}.t` as UIKey)}</h3>
+                <p>{t(`home.story.${m.key}.d` as UIKey)}</p>
+                {p && (
+                  <a class="link-arrow" href={href(locale, routes.product(p.slug))}>{p.name[locale]} <Icon name="arrow" /></a>
+                )}
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- How ordering works + the star note card -->
+  <section class="section how" aria-labelledby="how-title">
+    <div class="container how__grid">
+      <div class="how__copy">
+        <h2 id="how-title" data-reveal>{t('home.howTitle')}</h2>
+        <ol class="how__steps" role="list">
+          {how.map((h, i) => (
+            <li data-reveal style={`--i:${i}`}>
+              <span class="how__num">{i + 1}</span>
+              <span class="how__icon"><Icon name={h.icon} /></span>
+              <span>{t(h.key)}</span>
+            </li>
+          ))}
+        </ol>
+        <a class="btn btn--wa" href={site.contact.whatsappLink} target="_blank" rel="noopener"><Icon name="whatsapp" /> {t('hero.whatsapp')}</a>
+      </div>
+      <figure class="how__note" data-reveal="scale">
+        <img src={starNote.src} width="420" height="400" alt="Stay cozy, sleep well, and dream sweet — Made with love, Nooma Team" loading="lazy" />
+        <figcaption class="visually-hidden">{t('home.noteTitle')}</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- Service essentials -->
+  <section class="section section--tight" aria-labelledby="service-title">
+    <div class="container">
+      <h2 id="service-title" class="service__title" data-reveal>{t('home.serviceTitle')}</h2>
+      <ul role="list" class="service">
+        <li data-reveal style="--i:0">
+          <a href={href(locale, routes.shipping)}>
+            <span class="service__icon"><Icon name="truck" /></span>
+            <strong>{t('home.service.shipping')}</strong>
+            <span>{t('home.service.shippingText')}</span>
+          </a>
+        </li>
+        <li data-reveal style="--i:1">
+          <a href={href(locale, routes.sizeGuide)}>
+            <span class="service__icon"><Icon name="ruler" /></span>
+            <strong>{t('home.service.sizes')}</strong>
+            <span>{t('home.service.sizesText')}</span>
+          </a>
+        </li>
+        <li data-reveal style="--i:2">
+          <a href={href(locale, routes.returns)}>
+            <span class="service__icon"><Icon name="refresh" /></span>
+            <strong>{t('home.service.returns')}</strong>
+            <span>{t('home.service.returnsText')}</span>
+            <span class="chip chip--sample">{t('pending.label')}</span>
+          </a>
+        </li>
+        <li data-reveal style="--i:3">
+          <a href={href(locale, routes.contact)}>
+            <span class="service__icon"><Icon name="chat" /></span>
+            <strong>{t('home.service.help')}</strong>
+            <span>{t('home.service.helpText')}</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Instagram community -->
+  <section class="section ig" aria-labelledby="ig-title">
+    <div class="container">
+      <div class="ig__panel wallpaper" data-reveal="scale">
+        <img class="ig__cat" src={catStretch.src} width="180" height="250" alt="" loading="lazy" />
+        <div class="ig__avatar">
+          <Image src={logoAr} alt="" width={150} densities={[1, 2]} />
+        </div>
+        <div class="ig__copy">
+          <h2 id="ig-title">{t('home.igTitle')}</h2>
+          <p>{t('home.igText')}</p>
+          <a class="btn" href={site.contact.instagramUrl} target="_blank" rel="noopener"><Icon name="instagram" /> {t('home.igCta')}</a>
+        </div>
+      </div>
+      <p class="ig__wholesale">
+        <img src={catFace.src} width="40" height="40" alt="" loading="lazy" />
+        {t('home.wholesale')}:
+        <a href={`mailto:${site.contact.email}?subject=${encodeURIComponent(locale === 'ar' ? 'طلب بالجملة' : 'Wholesale enquiry')}`} dir="ltr">{site.contact.email}</a>
+      </p>
+    </div>
+  </section>
+</Base>
+
+<script>
+  // Routine: the step in view drives the sticky illustration and the sun→moon arc.
+  const root = document.querySelector<HTMLElement>('[data-routine]');
+  const stage = root?.querySelector<HTMLElement>('.routine__stage');
+  const steps = root ? [...root.querySelectorAll<HTMLElement>('[data-step]')] : [];
+  if (root && stage && steps.length && 'IntersectionObserver' in window) {
+    const set = (i: number) => {
+      stage.dataset.active = String(i);
+      stage.style.setProperty('--progress', String(i / (steps.length - 1)));
+      steps.forEach((s, j) => s.classList.toggle('is-active', j === i));
+    };
+    set(0);
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) if (e.isIntersecting) set(Number((e.target as HTMLElement).dataset.step));
+      },
+      { rootMargin: '-45% 0px -45% 0px' },
+    );
+    steps.forEach((s) => io.observe(s));
+  }
+</script>

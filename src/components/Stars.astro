@@ -1,0 +1,29 @@
+---
+/**
+ * Scatter of hand-drawn four-point sparkles (the card artwork's pink/butter
+ * stars). Deterministic positions from a seed so builds are stable.
+ */
+interface Props { count?: number; seed?: number; class?: string }
+const { count = 18, seed = 1, class: cls } = Astro.props;
+let s = seed * 9301 + 49297;
+const rnd = () => ((s = (s * 9301 + 49297) % 233280) / 233280);
+const stars = Array.from({ length: count }, (_, i) => ({
+  x: (rnd() * 96 + 2).toFixed(1),
+  y: (rnd() * 90 + 4).toFixed(1),
+  size: Math.round(8 + rnd() * 14),
+  delay: (rnd() * 4).toFixed(2),
+  dur: (2.6 + rnd() * 2.8).toFixed(2),
+  tone: i % 3 === 0 ? 'blush' : i % 3 === 1 ? 'butter' : 'paper',
+}));
+---
+<div class:list={['stars', cls]} aria-hidden="true">
+  {stars.map((st) => (
+    <svg
+      class={`star star--${st.tone}`}
+      viewBox="0 0 24 24"
+      style={`left:${st.x}%;top:${st.y}%;width:${st.size}px;height:${st.size}px;--d:${st.delay}s;--t:${st.dur}s`}
+    >
+      <path d="M12 2c.7 5.4 2.6 7.3 8 8-5.4.7-7.3 2.6-8 8-.7-5.4-2.6-7.3-8-8 5.4-.7 7.3-2.6 8-8z" />
+    </svg>
+  ))}
+</div>
