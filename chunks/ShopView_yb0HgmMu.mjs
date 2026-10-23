@@ -1,0 +1,34 @@
+import { c as createAstro, a as createComponent, r as renderComponent, e as renderScript, b as renderTemplate, m as maybeRenderHead, d as addAttribute } from './astro/server_1CtveiNb.mjs';
+import 'piccolore';
+import { l as liveCategories, t as getCategory, p as products, y as sizes, r as routes, h as href, $ as $$Base, u as useT, d as $$Image, g as artAlt, i as art, b as $$Icon, n as countLabel, c as catCurled } from './Base_FD_NNjDc.mjs';
+/* empty css                         */
+import { $ as $$ProductCard } from './ProductCard_CpG3rK1G.mjs';
+import { $ as $$Breadcrumbs } from './Breadcrumbs_B900l8Ag.mjs';
+
+const $$Astro = createAstro("https://moathalgunimi17-svg.github.io");
+const $$ShopView = createComponent(($$result, $$props, $$slots) => {
+  const Astro2 = $$result.createAstro($$Astro, $$props, $$slots);
+  Astro2.self = $$ShopView;
+  const { locale, categoryId } = Astro2.props;
+  const t = useT(locale);
+  const cats = liveCategories();
+  const cat = categoryId ? getCategory(categoryId) : void 0;
+  const list = cat ? products.filter((p) => p.categoryId === cat.id) : products;
+  const sizeFacet = sizes.filter((s) => list.some((p) => p.sizeIds.includes(s.id)));
+  const colourMap = /* @__PURE__ */ new Map();
+  for (const p of list) for (const c of p.colourways) if (!colourMap.has(c.id)) colourMap.set(c.id, { id: c.id, name: c.name[locale], swatch: c.swatch });
+  const colourFacet = [...colourMap.values()];
+  const priced = list.filter((p) => p.price !== null);
+  const canSortByPrice = new Set(priced.map((p) => p.price)).size > 1;
+  const path = cat ? routes.collection(cat.slug) : routes.shop;
+  const title = cat ? `${cat.name[locale]} | ${t("meta.siteName")}` : `${t("shop.title")} | ${t("meta.siteName")}`;
+  const desc = cat ? `${cat.blurb[locale]} \u2014 ${t("shop.desc")}` : t("shop.desc");
+  const crumbs = [
+    { label: t("common.home"), href: href(locale) },
+    ...cat ? [{ label: t("nav.allProducts"), href: href(locale, routes.shop) }] : [],
+    { label: cat ? cat.name[locale] : t("shop.title") }
+  ];
+  return renderTemplate`${renderComponent($$result, "Base", $$Base, { "locale": locale, "path": path, "title": title, "description": desc }, { "default": ($$result2) => renderTemplate` ${maybeRenderHead()}<section class="shop-hero"${addAttribute(cat ? `--tint: var(--tint-${cat.tint})` : void 0, "style")}> <div class="container shop-hero__inner"> <div> ${renderComponent($$result2, "Breadcrumbs", $$Breadcrumbs, { "items": crumbs, "locale": locale })} <h1>${cat ? cat.name[locale] : t("shop.title")}</h1> <p class="muted">${cat ? cat.blurb[locale] : t("shop.desc")}</p> </div> ${cat && renderTemplate`${renderComponent($$result2, "Image", $$Image, { "class": "shop-hero__art", "src": art[cat.art], "alt": artAlt[cat.art][locale], "width": 200, "densities": [1, 2], "loading": "eager" })}`} </div> </section> <div class="container shop" data-shop${addAttribute(cat?.id ?? "", "data-fixed-category")}> <div class="shop__bar"> <label class="shop__search"> ${renderComponent($$result2, "Icon", $$Icon, { "name": "search" })} <span class="visually-hidden">${t("shop.searchLabel")}</span> <input type="search"${addAttribute(t("search.placeholder"), "placeholder")} data-f-q autocomplete="off"> </label> <p class="shop__count" data-f-count aria-live="polite">${countLabel(locale, list.length)}</p> <button class="btn btn--ghost btn--sm shop__filter-btn" type="button" data-open="filters-sheet" aria-haspopup="dialog"> ${renderComponent($$result2, "Icon", $$Icon, { "name": "filter" })} ${t("shop.showFilters")} </button> </div> <div class="shop__active" data-f-active hidden></div> <div class="shop__layout"> <dialog class="shop__filters sheet sheet--start" id="filters-sheet"${addAttribute(t("shop.filters"), "aria-label")}> <div class="sheet__head shop__filters-head"> <h2>${t("shop.filters")}</h2> <button class="icon-btn" type="button" data-close>${renderComponent($$result2, "Icon", $$Icon, { "name": "close" })}<span class="visually-hidden">${t("a11y.close")}</span></button> </div> <form class="sheet__body" data-f-form> ${!cat && cats.length > 1 && renderTemplate`<fieldset class="opt-group"> <legend>${t("shop.collection")}</legend> <div class="sizes"> <label class="size-chip"><input type="radio" name="c" value="" checked><span>${t("shop.allCollections")}</span></label> ${cats.map((c) => renderTemplate`<label class="size-chip"><input type="radio" name="c"${addAttribute(c.id, "value")}><span>${c.name[locale]}</span></label>`)} </div> </fieldset>`} ${sizeFacet.length > 1 && renderTemplate`<fieldset class="opt-group"> <legend>${t("shop.size")}</legend> <div class="sizes"> ${sizeFacet.map((s) => renderTemplate`<label class="size-chip"><input type="checkbox" name="size"${addAttribute(s.id, "value")}${addAttribute(s.label[locale], "data-label")}><span>${s.label[locale]}</span></label>`)} </div> </fieldset>`} ${colourFacet.length > 1 && renderTemplate`<fieldset class="opt-group"> <legend>${t("shop.colour")}</legend> <div class="swatches"> ${colourFacet.map((c) => renderTemplate`<label class="swatch"${addAttribute(`--sw: ${c.swatch}`, "style")}><input type="checkbox" name="colour"${addAttribute(c.id, "value")}${addAttribute(c.name, "data-label")}><span>${c.name}</span></label>`)} </div> </fieldset>`} <div class="field"> <label for="f-sort">${t("shop.sort")}</label> <select class="select" id="f-sort" name="sort"> <option value="featured">${t("shop.sort.featured")}</option> ${canSortByPrice && renderTemplate`<option value="priceAsc">${t("shop.sort.priceAsc")}</option>`} ${canSortByPrice && renderTemplate`<option value="priceDesc">${t("shop.sort.priceDesc")}</option>`} <option value="name">${t("shop.sort.name")}</option> </select> </div> <div class="shop__filters-actions"> <button class="btn btn--ghost" type="reset" data-f-clear>${t("shop.clear")}</button> <button class="btn shop__apply" type="button" data-close>${t("shop.applyFilters")}</button> </div> </form> </dialog> <div class="shop__results"> <div class="pgrid" data-f-grid> ${list.map((p, i) => renderTemplate`${renderComponent($$result2, "ProductCard", $$ProductCard, { "product": p, "locale": locale, "index": i, "eager": i < 2 })}`)} </div> <div class="shop__empty" data-f-empty hidden> <img${addAttribute(catCurled.src, "src")} width="160" height="148" alt="" loading="lazy"> <h2>${t("shop.emptyTitle")}</h2> <p class="muted">${t("shop.emptyText")}</p> <button class="btn" type="button" data-f-clear>${t("shop.clear")}</button> </div> </div> </div> </div> ` })} ${renderScript($$result, "C:/Users/Mkhal/OneDrive/\u0633\u0637\u062D \u0627\u0644\u0645\u0643\u062A\u0628/pro websites/nooma/src/views/ShopView.astro?astro&type=script&index=0&lang.ts")}`;
+}, "C:/Users/Mkhal/OneDrive/\u0633\u0637\u062D \u0627\u0644\u0645\u0643\u062A\u0628/pro websites/nooma/src/views/ShopView.astro", void 0);
+
+export { $$ShopView as $ };
