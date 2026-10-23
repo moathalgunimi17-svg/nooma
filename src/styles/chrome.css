@@ -378,9 +378,9 @@ dialog::backdrop { background: var(--color-scrim); }
   white-space: nowrap;
 }
 .footer__cols a:hover { color: var(--color-blush); text-decoration: underline; }
+.footer__cols a.footer__email { white-space: normal; }
 .footer__cols svg { width: 1.05rem; height: 1.05rem; flex: none; }
-.footer__email bdi { white-space: normal; overflow-wrap: anywhere; }
-.footer__email { white-space: normal !important; }
+
 .footer__bottom {
   display: flex;
   flex-wrap: wrap;
@@ -401,6 +401,8 @@ dialog::backdrop { background: var(--color-scrim); }
 @media (max-width: 960px) {
   .footer__top { grid-template-columns: minmax(0, 1fr); }
   .footer__cols { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* Full row, so the email address never breaks across two lines. */
+  .footer__col--contact { grid-column: 1 / -1; }
 }
 @media (max-width: 420px) {
   .footer__cols { gap: var(--space-md); }

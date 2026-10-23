@@ -17,6 +17,8 @@ const logo = locale === 'ar' ? logoArLight : logoEnLight;
 const cats = liveCategories();
 const year = new Date().getFullYear();
 const path = Astro.url.pathname;
+// Lets a narrow column wrap the address at the @ instead of mid-word.
+const [emailUser, emailHost] = site.contact.email.split('@');
 ---
 <footer class="site-footer">
   <div class="footer__sky" aria-hidden="true">
@@ -58,12 +60,12 @@ const path = Astro.url.pathname;
           <li><a href={href(locale, routes.terms)}>{t('policy.terms')}</a></li>
         </ul>
       </div>
-      <div>
+      <div class="footer__col--contact">
         <h2>{t('footer.contact')}</h2>
         <ul role="list" class="footer__contact">
           <li><a href={site.contact.whatsappLink} target="_blank" rel="noopener"><Icon name="whatsapp" /> {t('contact.wa')}</a></li>
           <li><a href={`tel:${site.contact.phoneTel}`}><Icon name="phone" /> <bdi dir="ltr">{site.contact.phoneDisplay}</bdi></a></li>
-          <li><a href={`mailto:${site.contact.email}`} class="footer__email"><Icon name="mail" /> <bdi dir="ltr">{site.contact.email}</bdi></a></li>
+          <li><a href={`mailto:${site.contact.email}`} class="footer__email"><Icon name="mail" /> <bdi dir="ltr">{emailUser}<wbr />@{emailHost}</bdi></a></li>
           <li><a href={site.contact.instagramUrl} target="_blank" rel="noopener"><Icon name="instagram" /> <bdi dir="ltr">@{site.contact.instagramHandle}</bdi></a></li>
         </ul>
       </div>
