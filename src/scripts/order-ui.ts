@@ -20,7 +20,8 @@ async function copy(text: string): Promise<boolean> {
       ta.setAttribute('readonly', '');
       ta.style.position = 'fixed';
       ta.style.opacity = '0';
-      document.body.append(ta);
+      // Inside an open modal dialog everything else is inert, so the helper must live in it.
+      ([...document.querySelectorAll('dialog[open]')].pop() ?? document.body).append(ta);
       ta.select();
       const ok = document.execCommand('copy');
       ta.remove();
@@ -62,6 +63,7 @@ function present(message: string, opener: HTMLElement | null) {
   copyBtn.onclick = async () => {
     const ok = await copy(message);
     copyLabel.textContent = ok ? s('order.copied') : s('order.copy');
+    if (ok && !config.whatsappNumber) text.textContent = s('order.textCopy');
     if (!ok) {
       toast(s('order.copyFail'), undefined, 'info');
       box.focus();

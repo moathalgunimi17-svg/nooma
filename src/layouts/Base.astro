@@ -12,7 +12,7 @@ import { useT, dict } from '~/i18n/ui';
 import { href, routes } from '~/i18n/routes';
 import { clientCatalog } from '~/lib/art';
 import stripes from '~/assets/brand/stripes.svg';
-import ogFallback from '~/assets/brand/logo-ar.png';
+import ogFallback from '~/assets/brand/og-card.png';
 import { getImage } from 'astro:assets';
 
 import Announcement from '~/components/Announcement.astro';
@@ -44,7 +44,7 @@ const hideFromSearch = noindex || isPreview;
 const canonical = new URL(href(locale, path), site_).href;
 const altAr = new URL(href('ar', path), site_).href;
 const altEn = new URL(href('en', path), site_).href;
-const og = ogImage ?? (await getImage({ src: ogFallback, width: 900, format: 'jpg', background: '#FFF6F5' })).src;
+const og = ogImage ?? (await getImage({ src: ogFallback, width: 1200, format: 'jpg', quality: 82 })).src;
 const ogAbs = new URL(og, site_).href;
 
 const catalog = await clientCatalog();
@@ -108,6 +108,13 @@ const ld = [orgLd, ...(jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : []
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogAbs} />
+    {!ogImage && (
+      <>
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content={locale === 'ar' ? 'شعار نُومة مع رسومات أطفال ببيجامات' : 'Nooma logo with illustrated children in pajamas'} />
+      </>
+    )}
     <meta property="og:locale" content={locale === 'ar' ? 'ar_OM' : 'en_US'} />
     <meta property="og:locale:alternate" content={locale === 'ar' ? 'en_US' : 'ar_OM'} />
     <meta name="twitter:card" content="summary_large_image" />
