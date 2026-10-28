@@ -1,5 +1,7 @@
 /** Orders: list, filters, live updates and the order detail dialog. */
 import { $, explain, h, money, sb, showDialog, sizeLabel, toast, when } from './core';
+import { printInvoice } from './invoice';
+import { parseAmount } from '~/lib/order';
 
 export interface OrderItem {
   productId: string;
@@ -139,6 +141,7 @@ function openOrder(id: number) {
   const status = h('select', { class: 'select', id: 'od-status' },
     ...(Object.entries(STATUSES) as [Status, string][]).map(([k, v]) => h('option', { value: k, selected: k === o.status }, v)),
   );
+  const fee = h('input', { class: 'input', id: 'od-fee', 'aria-describedby': 'od-fee-hint', type: 'text', inputmode: 'decimal', dir: 'ltr', placeholder: '0.000', autocomplete: 'off' });
   status.addEventListener('change', () => update(o.id, { status: status.value as Status }, `الطلب #${o.id}: ${STATUSES[status.value as Status]}`));
 
   d.replaceChildren(
@@ -176,6 +179,26 @@ function openOrder(id: number) {
       h('tfoot', {}, h('tr', {}, h('th', { colspan: 2 }, 'المجموع الفرعي (بدون التوصيل)'), h('th', {}, money(o.subtotal)))),
     ),
     o.gift_note ? h('p', { class: 'admin-note' }, h('strong', {}, 'بطاقة إهداء: '), o.gift_note) : '',
+
+    h('h3', {}, 'الفاتورة'),
+    h('div', { class: 'field admin-print' },
+      h('label', { for: 'od-fee' }, 'رسوم التوصيل (اختياري)'),
+      h('div', { class: 'admin-print__row' },
+        fee,
+        h('button', {
+          type: 'button', class: 'btn btn--sm',
+          onclick: () => {
+            const delivery = parseAmount(fee.value);
+            if (Number.isNaN(delivery)) {
+              toast('اكتبي رسوم التوصيل كرقم، مثل 1.500 — أو اتركيها فارغة.', 'error');
+              return fee.focus();
+            }
+            printInvoice(o, delivery);
+          },
+        }, 'طباعة الفاتورة'),
+      ),
+      h('small', { class: 'muted', id: 'od-fee-hint' }, 'تُضاف إلى إجمالي الفاتورة المطبوعة فقط ولا تُحفظ.'),
+    ),
 
     h('div', { class: 'field' }, h('label', { for: 'od-note' }, 'ملاحظات داخلية (لا يراها العميل)'), note),
     h('div', { class: 'admin-actions' },

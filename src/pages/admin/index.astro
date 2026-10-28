@@ -122,6 +122,20 @@ const safeJson = (v: unknown) => JSON.stringify(v).replaceAll('<', String.fromCh
     <dialog class="admin-dialog admin-dialog--wide" data-product-dialog aria-labelledby="pd-title"></dialog>
     <div class="admin-toast" role="status" aria-live="polite" data-toast hidden></div>
 
+    <!-- Invoice sheet: only visible on paper (or PDF), filled per order by scripts/admin/invoice.ts. -->
+    <article class="invoice" data-invoice>
+      <header class="invoice__head">
+        <Image src={logo} alt="نُومة" width={130} densities={[1, 2]} loading="eager" />
+        <div class="invoice__shop">
+          <strong>نُومة · Nooma</strong>
+          <span dir="ltr">{site.contact.phoneDisplay}</span>
+          <span dir="ltr">instagram.com/{site.contact.instagramHandle}</span>
+          <span dir="ltr">{site.contact.email}</span>
+        </div>
+      </header>
+      <div data-invoice-body></div>
+    </article>
+
     <script>
       import '~/scripts/admin/main';
     </script>

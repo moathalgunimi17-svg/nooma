@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  asciiDigits, buildOrderMessage, clampQty, lineKey, resolveLines, totals, validEmail, validPhone, whatsappOrderUrl,
+  asciiDigits, buildOrderMessage, parseAmount, clampQty, lineKey, resolveLines, totals, validEmail, validPhone, whatsappOrderUrl,
 } from '~/lib/order';
 import { formatPrice, roundOmr } from '~/lib/format';
 import { matches, normalize } from '~/lib/search';
@@ -143,6 +143,21 @@ describe('order message', () => {
   it('builds a wa.me link only from digits and encodes the text', () => {
     const url = whatsappOrderUrl('+968 9xx-123', 'Hi & bye');
     expect(url).toBe('https://wa.me/9689123?text=Hi%20%26%20bye');
+  });
+});
+
+describe('typed amounts', () => {
+  it('reads Western and Arabic digits with either decimal mark', () => {
+    expect(parseAmount('')).toBeNull();
+    expect(parseAmount('  ')).toBeNull();
+    expect(parseAmount('1.5')).toBe(1.5);
+    expect(parseAmount('١٫٥٠٠')).toBe(1.5);
+    expect(parseAmount('2,250')).toBe(2.25);
+    expect(parseAmount('3')).toBe(3);
+  });
+
+  it('rejects anything that is not a plain amount', () => {
+    for (const bad of ['-1', 'abc', '1.2345', '1.2.3', '1e3']) expect(parseAmount(bad)).toBeNaN();
   });
 });
 

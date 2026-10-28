@@ -121,6 +121,13 @@ const oneLine = (v: string | undefined, max: number) => (v ?? '').replace(/\s+/g
 export const asciiDigits = (v: string) =>
   v.replace(/[٠-٩۰-۹]/g, (d) => String((d.charCodeAt(0) & 0xf) % 10));
 
+/** A typed OMR amount: "1.5", "١٫٥" or "1,500" → 1.5; empty → null; anything else → NaN. */
+export function parseAmount(raw: string): number | null {
+  const v = asciiDigits(raw.trim()).replace(/[٫,]/g, '.');
+  if (!v) return null;
+  return /^\d+(\.\d{1,3})?$/.test(v) ? Number(v) : NaN;
+}
+
 /** 8–15 digits once spaces, dashes and a leading + are ignored. No country code is ever added. */
 export const validPhone = (v: string) => /^\+?\d{8,15}$/.test(asciiDigits(v).replace(/[\s\-().]/g, ''));
 

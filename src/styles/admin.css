@@ -341,3 +341,64 @@
   text-align: center;
 }
 .admin-toast[data-kind='error'] { background: var(--color-danger); }
+
+/* ── Invoice print box in the order dialog ── */
+.admin-print { margin-bottom: var(--space-sm); }
+.admin-print__row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2xs); }
+.admin-print__row .input { flex: 0 1 10rem; min-width: 0; }
+
+/* ── Printable invoice: never on screen, only on paper / PDF from «طباعة الفاتورة» ── */
+.invoice { display: none; }
+@media print {
+  @page { margin: 12mm; }
+  body.is-printing { background: none; min-height: 0; }
+  body.is-printing > :not(.invoice) { display: none !important; }
+  body.is-printing .invoice { display: block; }
+}
+.invoice { color: var(--color-ink); font-size: 11pt; line-height: 1.55; }
+.invoice dl { margin: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 0.1rem 0.9rem; }
+.invoice dt { color: var(--color-ink-muted); }
+.invoice dd { margin: 0; overflow-wrap: anywhere; }
+.invoice__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--color-indigo);
+}
+.invoice__head img { width: 130px; height: auto; }
+.invoice__shop { display: grid; gap: 0.05rem; text-align: end; font-size: 9.5pt; color: var(--color-ink-muted); }
+.invoice__shop strong { color: var(--color-indigo); font-size: 11.5pt; }
+.invoice__title { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin: 1.1rem 0 0.9rem; }
+.invoice__title h1 { margin: 0; font-family: var(--font-display); font-size: 22pt; color: var(--color-indigo); }
+.invoice__title dl { font-size: 10pt; }
+.invoice__sample { margin: 0 0 0.9rem; padding: 0.3rem 0.6rem; border: 1px dashed var(--color-danger); color: var(--color-danger); font-size: 9.5pt; }
+.invoice__to { margin-bottom: 1rem; padding: 0.6rem 0.85rem; border: 1px solid var(--color-line); border-radius: 8px; break-inside: avoid; }
+.invoice__to h2 { margin: 0 0 0.3rem; font-size: 10pt; font-weight: 600; color: var(--color-ink-muted); }
+.invoice__items { width: 100%; border-collapse: collapse; font-size: 10.5pt; }
+.invoice__items th, .invoice__items td { padding: 0.45rem 0.4rem; border-bottom: 1px solid var(--color-line-soft); text-align: start; vertical-align: top; }
+.invoice__items thead th {
+  background: var(--color-lavender-2);
+  border-bottom: 1px solid var(--color-line);
+  font-size: 9.5pt;
+  font-weight: 600;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.invoice__items td:nth-child(n + 3), .invoice__items thead th:nth-child(n + 3), .invoice__items tfoot td { text-align: end; white-space: nowrap; }
+.invoice__items td:first-child { color: var(--color-ink-muted); width: 2rem; }
+.invoice__items td:nth-child(2) { width: 100%; }
+.invoice__items tr { break-inside: avoid; }
+.invoice__items tfoot th { font-weight: 500; text-align: end; border-bottom: 0; }
+.invoice__items tfoot td { border-bottom: 0; }
+.invoice__items tfoot .invoice__total th, .invoice__items tfoot .invoice__total td {
+  padding-top: 0.6rem;
+  border-top: 2px solid var(--color-indigo);
+  font-size: 13pt;
+  font-weight: 700;
+  color: var(--color-indigo);
+}
+.invoice__muted { color: var(--color-ink-muted); font-size: 9.5pt; }
+.invoice__gift { margin: 1rem 0 0; padding: 0.5rem 0.75rem; border-inline-start: 3px solid var(--color-sun-deep); break-inside: avoid; }
+.invoice__thanks { margin: 1.6rem 0 0; text-align: center; font-family: var(--font-display); color: var(--color-indigo); }
