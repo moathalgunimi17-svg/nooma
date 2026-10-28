@@ -5,6 +5,7 @@ export interface ClientConfig {
   locale: Locale;
   whatsappLink: string;
   whatsappNumber: string | null;
+  backend: { supabaseUrl: string; supabaseAnonKey: string } | null;
   maxQty: number;
   sample: boolean;
   productBase: string;
@@ -26,6 +27,7 @@ export const config = readJson<ClientConfig>('nooma-config', {
   locale: 'ar',
   whatsappLink: '',
   whatsappNumber: null,
+  backend: null,
   maxQty: 10,
   sample: true,
   productBase: '/products/',

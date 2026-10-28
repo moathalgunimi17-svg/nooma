@@ -30,7 +30,7 @@ const catalog: ClientProduct[] = [
 const strings = {
   greeting: 'Hello', size: 'Size', colour: 'Colour', qty: 'Qty', subtotal: 'Subtotal',
   priceTbc: 'price to confirm', shippingNote: 'Delivery: TBC', giftNote: 'Gift note', sampleNote: '(sample)', closing: 'Thanks',
-  customer: 'Delivery details', name: 'Name', phone: 'Phone', email: 'Email', area: 'Area', address: 'Address',
+  customer: 'Delivery details', orderNo: 'Order no.', name: 'Name', phone: 'Phone', email: 'Email', area: 'Area', address: 'Address',
 };
 const who = { name: '', phone: '', email: '', area: '', address: '' };
 
@@ -129,6 +129,11 @@ describe('order message', () => {
     expect(asciiDigits('٩٦١٠٢٨٨٢')).toBe('96102882');
     expect(validEmail('a@b.co')).toBe(true);
     expect(validEmail('a@b')).toBe(false);
+  });
+
+  it('puts the saved order number under the greeting', () => {
+    expect(buildOrderMessage(lines, 'en', strings, { orderId: 1024 }).startsWith('Hello\nOrder no.: #1024\n')).toBe(true);
+    expect(buildOrderMessage(lines, 'en', strings)).not.toContain('Order no.');
   });
 
   it('marks sample orders', () => {

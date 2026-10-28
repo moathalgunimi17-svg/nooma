@@ -82,12 +82,50 @@ The `/cart/` page is excluded from the sitemap and marked `noindex`.
      message is shown in a box to copy by hand.
 4. The site never says an order has been placed or paid. It tells the customer that Nooma confirms the order on WhatsApp.
 
+## Admin (orders + products)
+
+Nooma's admin lives at **`/admin/`** (e.g. https://moathalgunimi17-svg.github.io/nooma/admin/). It is Arabic-only,
+phone-friendly and never indexed. It needs a free [Supabase](https://supabase.com) project; until
+`site.backend` is set in `src/config/site.ts`, the admin shows "not set up yet" and the shop keeps working from
+`src/data/sample-products.ts` with WhatsApp-only orders.
+
+**What it does**
+
+- **Orders**: every confirmed order gets a number (#1001, #1002…) before WhatsApp opens. The admin lists them live
+  (with a sound when a new one arrives), filters by status, searches, shows the customer and items, changes status
+  (new → preparing → shipped → delivered / cancelled), keeps internal notes, and opens a WhatsApp chat or call.
+  Prices are always taken from the database by `place_order()`, never from the browser.
+- **Products**: add, edit, hide, delete; Arabic/English text, category, price, sale price, sizes, colours, and photos
+  (resized on the phone to WebP, stored in Supabase Storage).
+- **Publish**: the site is static, so product changes go live when the owner taps **نشر الآن**. That calls the
+  `publish` Supabase function, which starts `.github/workflows/publish.yml` to rebuild and redeploy (≈2 minutes).
+
+**One-time setup**
+
+1. Create a Supabase project. In **SQL Editor**, run `supabase/setup.sql` (tables, security rules, order function,
+   photo bucket, the five sample products). It is safe to run again.
+2. **Authentication → Users → Add user** (email + password, *Auto Confirm*). Put that email in
+   `supabase/make-admin.sql` and run it. Then **Authentication → Sign In / Providers**: turn off "Allow new users to sign up".
+3. **Project Settings → API**: copy the Project URL and the `anon` public key into `site.backend` in
+   `src/config/site.ts`. Both are public by design; never put the `service_role` key anywhere in this repo.
+4. Publishing from the admin:
+   - Allow pushing the workflow file once: `gh auth refresh -h github.com -s workflow`, then commit and push
+     `.github/workflows/publish.yml`.
+   - GitHub → Settings → Developer settings → Fine-grained tokens: a token for **this repository only** with
+     **Actions: Read and write**.
+   - `npx supabase login`, then `npx supabase link --project-ref <ref>`,
+     `npx supabase secrets set GH_TOKEN=<token> GH_REPO=moathalgunimi17-svg/nooma`,
+     `npx supabase functions deploy publish --use-api`.
+
+**Tests**: `tests/catalog.test.ts` covers the database → catalogue mapping. The SQL (security rules, order checks,
+flood guard) was tested on PGlite with stand-ins for Supabase's `auth` and `storage` schemas.
+
 ## Where things live
 
 | To change… | Edit |
 | --- | --- |
 | Contacts, WhatsApp number, announcement bar, shipping rule, sample flag | `src/config/site.ts` |
-| Products, collections, sizes | `src/data/catalog.ts` |
+| Products (without the admin), collections, sizes | `src/data/sample-products.ts`, `src/data/taxonomy.ts` |
 | Product photos | `src/assets/products/` (see the README there) |
 | Size chart measurements | `src/data/sizing.ts` |
 | Shipping / returns / privacy / terms wording | `src/data/policies.ts` |

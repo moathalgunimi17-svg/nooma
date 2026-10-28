@@ -1,0 +1,129 @@
+---
+/**
+ * Nooma admin — orders and products. Arabic only, never indexed.
+ * The page itself is public static HTML; every read and write goes through
+ * Supabase with the signed-in admin's session and is checked by row-level
+ * security (supabase/setup.sql). No secret is shipped to the browser.
+ */
+import '@fontsource-variable/readex-pro';
+import '@fontsource-variable/baloo-bhaijaan-2';
+import '~/styles/tokens.css';
+import '~/styles/base.css';
+import '~/styles/admin.css';
+import { Image } from 'astro:assets';
+import { site } from '~/config/site';
+import { categories, sizes } from '~/data/taxonomy';
+import { artKeys } from '~/data/remote';
+import Icon from '~/components/Icon.astro';
+import logo from '~/assets/brand/logo-ar.png';
+
+const adminConfig = {
+  backend: site.backend,
+  base: import.meta.env.BASE_URL,
+  categories: categories.map((c) => ({ id: c.id, name: c.name.ar })),
+  sizes: sizes.map((s) => ({ id: s.id, label: s.label.ar })),
+  artKeys,
+  sampleCatalog: site.sampleCatalog,
+};
+const safeJson = (v: unknown) => JSON.stringify(v).replaceAll('<', String.fromCharCode(92) + 'u003c');
+---
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="theme-color" content="#56618E" />
+    <title>لوحة نُومة</title>
+    <link rel="icon" type="image/png" sizes="64x64" href={`${import.meta.env.BASE_URL}favicon.png`} />
+    <script type="application/json" id="admin-config" set:html={safeJson(adminConfig)} />
+  </head>
+  <body class="admin">
+    <!-- Shown until the script decides what to show. -->
+    <div class="admin-center" data-view="boot">
+      <Image src={logo} alt="نُومة" width={140} densities={[1, 2]} loading="eager" />
+      <p class="muted">جارٍ التحميل…</p>
+    </div>
+
+    <div class="admin-center" data-view="config" hidden>
+      <Image src={logo} alt="نُومة" width={140} densities={[1, 2]} loading="eager" />
+      <h1>لوحة الإدارة غير مفعّلة بعد</h1>
+      <p class="muted">اربطي قاعدة البيانات أولاً: ضعي عنوان Supabase والمفتاح العام في <code dir="ltr">src/config/site.ts</code> ثم أعيدي النشر.</p>
+    </div>
+
+    <div class="admin-center" data-view="login" hidden>
+      <form class="admin-login" data-login novalidate>
+        <Image src={logo} alt="نُومة" width={150} densities={[1, 2]} loading="eager" />
+        <h1>لوحة نُومة</h1>
+        <div class="field">
+          <label for="login-email">البريد الإلكتروني</label>
+          <input class="input" id="login-email" name="email" type="email" dir="ltr" autocomplete="username" required />
+        </div>
+        <div class="field">
+          <label for="login-password">كلمة المرور</label>
+          <input class="input" id="login-password" name="password" type="password" dir="ltr" autocomplete="current-password" required />
+        </div>
+        <p class="field-error" data-login-error role="alert"></p>
+        <button class="btn btn--block" type="submit"><span class="btn__label">دخول</span></button>
+      </form>
+    </div>
+
+    <div class="admin-app" data-view="app" hidden>
+      <header class="admin-bar">
+        <div class="admin-bar__brand">
+          <Image src={logo} alt="" width={84} densities={[1, 2]} loading="eager" />
+          <span>الإدارة</span>
+        </div>
+        <nav class="admin-tabs" aria-label="أقسام اللوحة">
+          <button type="button" class="admin-tab" data-tab="orders" aria-pressed="true">
+            <Icon name="bag" /> الطلبات <span class="admin-badge" data-new-count hidden></span>
+          </button>
+          <button type="button" class="admin-tab" data-tab="products" aria-pressed="false"><Icon name="gift" /> المنتجات</button>
+        </nav>
+        <div class="admin-bar__end">
+          <button type="button" class="btn btn--sm btn--ghost" data-signout>خروج</button>
+        </div>
+      </header>
+
+      <main class="admin-main">
+        <section data-panel="orders" aria-label="الطلبات">
+          <div class="admin-toolbar">
+            <div class="admin-filters" role="group" aria-label="تصفية حسب الحالة" data-status-filters></div>
+            <div class="admin-toolbar__row">
+              <label class="visually-hidden" for="order-search">بحث في الطلبات</label>
+              <input class="input admin-search" id="order-search" type="search" placeholder="ابحثي بالاسم أو الرقم أو الهاتف" data-order-search />
+              <button type="button" class="btn btn--sm btn--soft" data-orders-refresh>تحديث</button>
+            </div>
+          </div>
+          <p class="admin-live muted" data-live-note>الطلبات الجديدة تظهر هنا تلقائياً.</p>
+          <ul class="admin-list" role="list" data-orders></ul>
+          <p class="admin-empty muted" data-orders-empty hidden>لا توجد طلبات هنا.</p>
+        </section>
+
+        <section data-panel="products" aria-label="المنتجات" hidden>
+          <div class="admin-publish" data-publish-box>
+            <div>
+              <strong>نشر التغييرات على الموقع</strong>
+              <p class="muted" data-publish-status>التعديلات على المنتجات تظهر في الموقع بعد النشر (دقيقتان تقريباً).</p>
+            </div>
+            <button type="button" class="btn" data-publish><span class="btn__label">نشر الآن</span></button>
+          </div>
+          <div class="admin-toolbar__row">
+            <button type="button" class="btn" data-product-new>+ إضافة منتج</button>
+          </div>
+          <ul class="admin-grid" role="list" data-products></ul>
+          <p class="admin-empty muted" data-products-empty hidden>لا توجد منتجات بعد. أضيفي أول منتج.</p>
+        </section>
+      </main>
+    </div>
+
+    <dialog class="admin-dialog" data-order-dialog aria-labelledby="od-title"></dialog>
+    <dialog class="admin-dialog admin-dialog--wide" data-product-dialog aria-labelledby="pd-title"></dialog>
+    <div class="admin-toast" role="status" aria-live="polite" data-toast hidden></div>
+
+    <script>
+      import '~/scripts/admin/main';
+    </script>
+  </body>
+</html>

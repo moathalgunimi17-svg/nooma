@@ -20,9 +20,10 @@ export default defineConfig({
   integrations: [
     sitemap({
       i18n: { defaultLocale: 'ar', locales: { ar: 'ar-OM', en: 'en' } },
-      filter: (page) => !page.includes('/cart/'),
+      filter: (page) => !page.includes('/cart/') && !page.includes('/admin/'),
     }),
   ],
-  image: { responsiveStyles: false },
+  // Photos uploaded from the admin live in Supabase Storage; they are optimised at build time like local ones.
+  image: { responsiveStyles: false, remotePatterns: [{ protocol: 'https', hostname: '**.supabase.co' }] },
   devToolbar: { enabled: false },
 });

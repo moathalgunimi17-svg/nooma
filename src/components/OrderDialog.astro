@@ -49,8 +49,10 @@ const t = useT(locale);
   </fieldset>
   <label class="order-dialog__label" for="order-message">{t('order.preview')}</label>
   <textarea class="textarea order-dialog__msg" id="order-message" readonly rows="8" data-order-message></textarea>
+  <p class="order-dialog__placed" data-order-placed role="status" hidden></p>
   <div class="order-dialog__actions">
-    <a class="btn btn--wa" data-order-open target="_blank" rel="noopener" href="#"><Icon name="whatsapp" /> {t('order.open')}</a>
+    <button class="btn btn--wa" type="button" data-order-confirm hidden><Icon name="check" /> <span class="btn__label">{t('order.confirm')}</span></button>
+    <a class="btn btn--wa" data-order-open target="_blank" rel="noopener" href="#"><Icon name="whatsapp" /> <span class="btn__label">{t('order.open')}</span></a>
     <button class="btn btn--ghost" type="button" data-order-copy><Icon name="copy" /> <span class="btn__label">{t('order.copy')}</span></button>
   </div>
   <p class="order-dialog__after"><Icon name="info" /> {t('order.after')}</p>

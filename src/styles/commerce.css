@@ -297,6 +297,17 @@
 .order-dialog__fields legend { padding: 0; margin-bottom: var(--space-xs); font-weight: 700; }
 .order-dialog__fields .field { margin-bottom: var(--space-sm); }
 .order-dialog__fields small { font-size: var(--text-xs); }
+.order-dialog__placed {
+  margin: 0;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-md);
+  background: var(--color-lavender-2);
+  color: var(--color-ink);
+  font-weight: 600;
+  text-align: start;
+}
+.order-dialog__placed.is-error { background: var(--color-pending-bg); color: oklch(34% 0.08 70); }
+.order-dialog [data-order-confirm][aria-busy='true'] { opacity: 0.7; cursor: progress; }
 .order-dialog__label { text-align: start; font-weight: 600; font-size: var(--text-sm); }
 .order-dialog__msg { font-size: var(--text-sm); background: var(--color-paper-2); min-height: 9rem; text-align: start; }
 .order-dialog__actions { display: flex; gap: var(--space-2xs); flex-wrap: wrap; justify-content: center; }

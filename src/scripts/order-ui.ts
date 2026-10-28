@@ -3,12 +3,15 @@
  *  - Verified international number configured → wa.me/<n>?text=… (prefilled).
  *  - Otherwise → copy the message, then open Nooma's verified wa.me/message
  *    link; the customer pastes it. Nothing is ever reported as "ordered".
- * Orders ask for delivery details first; they go into the message only and
- * are kept in sessionStorage for this visit, never sent to a server.
+ * Orders ask for delivery details first (kept in sessionStorage for this visit).
+ * With Nooma's admin database connected (site.backend), "Confirm order" saves
+ * the order through place_order() and its number goes into the WhatsApp text;
+ * without it, the details travel in the WhatsApp message only.
  */
 import {
-  buildOrderMessage, validEmail, validPhone, whatsappOrderUrl, type CustomerDetails, type ResolvedLine,
+  buildOrderMessage, validEmail, validPhone, whatsappOrderUrl, type CartLine, type CustomerDetails, type ResolvedLine,
 } from '~/lib/order';
+import { orderPayload, placeOrder } from '~/lib/orders-api';
 import { config, s } from './env';
 import { cart } from './store';
 import { openDialog, toast } from './ui';
@@ -60,7 +63,18 @@ async function copy(text: string): Promise<boolean> {
   }
 }
 
-function present(build: (d: CustomerDetails) => string, opener: HTMLElement | null, withDetails: boolean) {
+interface Spec {
+  build: (d: CustomerDetails, orderId?: number) => string;
+  withDetails: boolean;
+  /** Lines to save in the admin database (orders only). */
+  lines?: CartLine[];
+  giftNote?: string;
+  /** Runs once a saved order is handed to WhatsApp. */
+  onSent?: () => void;
+}
+
+function present(spec: Spec, opener: HTMLElement | null) {
+  const { build, withDetails } = spec;
   const d = document.getElementById('order-dialog') as HTMLDialogElement | null;
   if (!d) return;
   const box = d.querySelector<HTMLTextAreaElement>('[data-order-message]')!;
@@ -70,7 +84,21 @@ function present(build: (d: CustomerDetails) => string, opener: HTMLElement | nu
   const copyLabel = copyBtn.querySelector('.btn__label')!;
   const fields = d.querySelector<HTMLFieldSetElement>('[data-order-fields]')!;
   const input = (name: keyof CustomerDetails) => fields.querySelector<HTMLInputElement>(`[name="${name}"]`)!;
+  const confirmBtn = d.querySelector<HTMLButtonElement>('[data-order-confirm]')!;
+  const confirmLabel = confirmBtn.querySelector('.btn__label')!;
+  const openLabel = open.querySelector('.btn__label')!;
+  const placed = d.querySelector<HTMLElement>('[data-order-placed]')!;
   copyLabel.textContent = s('order.copy');
+
+  // Save first when the database is connected; WhatsApp comes after.
+  const saving = !!config.backend && withDetails && !!spec.lines?.length;
+  let orderId: number | undefined;
+  confirmBtn.hidden = !saving;
+  open.hidden = saving;
+  copyBtn.hidden = saving;
+  placed.hidden = true;
+  fields.disabled = false;
+  openLabel.textContent = s('order.open');
 
   fields.hidden = !withDetails;
   const saved = loadDetails();
@@ -89,7 +117,7 @@ function present(build: (d: CustomerDetails) => string, opener: HTMLElement | nu
 
   let message = '';
   const refresh = () => {
-    message = build(read());
+    message = build(read(), orderId);
     box.value = message;
     open.href = config.whatsappNumber ? whatsappOrderUrl(config.whatsappNumber, message) : config.whatsappLink;
   };
@@ -122,8 +150,35 @@ function present(build: (d: CustomerDetails) => string, opener: HTMLElement | nu
     refresh();
   };
 
-  if (config.whatsappNumber) text.textContent = s(withDetails ? 'order.textDetails' : 'order.text');
+  if (saving) text.textContent = s('order.textConfirm');
+  else if (config.whatsappNumber) text.textContent = s(withDetails ? 'order.textDetails' : 'order.text');
   else text.textContent = s(withDetails ? 'order.textDetails' : 'order.textCopy');
+
+  confirmBtn.onclick = async () => {
+    if (!valid() || confirmBtn.getAttribute('aria-busy') === 'true') return;
+    confirmBtn.setAttribute('aria-busy', 'true');
+    confirmLabel.textContent = s('order.saving');
+    try {
+      orderId = await placeOrder(config.backend!, orderPayload(spec.lines!, read(), config.locale, spec.giftNote));
+      placed.textContent = s('order.placed', { n: orderId });
+      placed.classList.remove('is-error');
+    } catch (err) {
+      // Never block the customer: WhatsApp still works without a saved order.
+      console.warn(err);
+      placed.textContent = s('order.saveFail');
+      placed.classList.add('is-error');
+    }
+    confirmBtn.removeAttribute('aria-busy');
+    confirmLabel.textContent = s('order.confirm');
+    fields.disabled = true;
+    placed.hidden = false;
+    confirmBtn.hidden = true;
+    open.hidden = false;
+    copyBtn.hidden = false;
+    openLabel.textContent = s('order.sendWa');
+    refresh();
+    open.focus();
+  };
 
   // On phones, open wa.me in the same tab: it hands straight over to the WhatsApp app,
   // and some in-app browsers (Instagram, Snapchat…) silently ignore target=_blank.
@@ -135,6 +190,7 @@ function present(build: (d: CustomerDetails) => string, opener: HTMLElement | nu
     }
     // Without a number the customer pastes the message, so copy it on the way out.
     if (!config.whatsappNumber && withDetails) void copy(message);
+    if (orderId) spec.onSent?.();
   };
 
   copyBtn.onclick = async () => {
@@ -177,6 +233,7 @@ function strings() {
     sampleNote: s('order.msg.sample'),
     closing: s('order.msg.closing'),
     customer: s('order.msg.customer'),
+    orderNo: s('order.msg.number'),
     name: s('order.msg.name'),
     phone: s('order.msg.phone'),
     email: s('order.msg.email'),
@@ -188,10 +245,17 @@ function strings() {
 export function startCheckout(lines: ResolvedLine[], opener: HTMLElement | null) {
   if (!lines.length) return;
   const sample = config.sample && lines.some((l) => l.product.sample);
+  const giftNote = cart.giftNote;
   present(
-    (customer) => buildOrderMessage(lines, config.locale, strings(), { giftNote: cart.giftNote, sample, customer }),
+    {
+      build: (customer, orderId) => buildOrderMessage(lines, config.locale, strings(), { giftNote, sample, customer, orderId }),
+      withDetails: true,
+      lines,
+      giftNote,
+      // The saved order is on its way to WhatsApp: start the next visit with an empty bag.
+      onSent: () => cart.clear(),
+    },
     opener,
-    true,
   );
 }
 
@@ -199,8 +263,15 @@ export function startCheckout(lines: ResolvedLine[], opener: HTMLElement | null)
 export function startSingle(lines: ResolvedLine[], fallbackName: string, opener: HTMLElement | null) {
   if (lines.length) {
     const sample = config.sample && lines.some((l) => l.product.sample);
-    present((customer) => buildOrderMessage(lines, config.locale, strings(), { sample, customer }), opener, true);
+    present(
+      {
+        build: (customer, orderId) => buildOrderMessage(lines, config.locale, strings(), { sample, customer, orderId }),
+        withDetails: true,
+        lines,
+      },
+      opener,
+    );
   } else {
-    present(() => s('order.single', { x: fallbackName }), opener, false);
+    present({ build: () => s('order.single', { x: fallbackName }), withDetails: false }, opener);
   }
 }

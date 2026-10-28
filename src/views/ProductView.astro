@@ -12,7 +12,7 @@ import { site, type Locale } from '~/config/site';
 import { useT } from '~/i18n/ui';
 import { href, routes } from '~/i18n/routes';
 import { products } from '~/data/catalog';
-import { art, artAlt, colourPhotos, getCategory, getProduct, sizeById } from '~/lib/art';
+import { art, artAlt, colourPhotos, getCategory, getProduct, picSrc, sizeById, type Pic } from '~/lib/art';
 import { formatPrice } from '~/lib/format';
 
 interface Props { locale: Locale; slug: string }
@@ -26,12 +26,12 @@ const media = p.colourways.map((c) => {
   return {
     colour: c,
     isArt: photos.length === 0,
-    images: photos.length ? photos : [art[c.art]],
+    images: (photos.length ? photos : [art[c.art]]) as Pic[],
     alt: photos.length ? `${p.name[locale]} — ${c.name[locale]}` : artAlt[c.art][locale],
   };
 });
 const thumbs = await Promise.all(
-  media.flatMap((m) => m.images.map(async (img) => ({ colour: m.colour.id, src: (await getImage({ src: img, width: 160, format: 'webp' })).src }))),
+  media.flatMap((m) => m.images.map(async (img) => ({ colour: m.colour.id, src: (await getImage({ ...picSrc(img), width: 160, format: 'webp' })).src }))),
 );
 
 const related = [
@@ -41,7 +41,7 @@ const related = [
 
 const title = `${p.name[locale]} | ${t('meta.siteName')}`;
 const desc = `${p.summary[locale]} — ${p.description[locale]}`.slice(0, 158);
-const og = (await getImage({ src: media[0]!.images[0]!, width: 600, format: 'jpg', background: '#FFF6F5' })).src;
+const og = (await getImage({ ...picSrc(media[0]!.images[0]!), width: 600, format: 'jpg', background: '#FFF6F5' })).src;
 const crumbs = [
   { label: t('common.home'), href: href(locale) },
   ...(cat ? [{ label: cat.name[locale], href: href(locale, routes.collection(cat.slug)) }] : []),
@@ -80,7 +80,7 @@ const isSoldOut = (id: string) => (p.stock ? !((p.stock[id] ?? 0) > 0) : false);
           {media.map((m, i) => (
             <figure class="pdp__slide" data-colour-slide={m.colour.id} hidden={i !== 0}>
               <Image
-                src={m.images[0]!}
+                {...picSrc(m.images[0]!)}
                 alt={m.alt}
                 widths={[360, 560, 760]}
                 sizes="(max-width: 900px) 90vw, 560px"

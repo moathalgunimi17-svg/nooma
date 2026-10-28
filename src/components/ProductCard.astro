@@ -8,7 +8,7 @@ import type { Locale } from '~/config/site';
 import type { Product } from '~/data/types';
 import { useT } from '~/i18n/ui';
 import { href, routes } from '~/i18n/routes';
-import { colourPhotos, coverImage, getCategory } from '~/lib/art';
+import { colourPhotos, coverImage, getCategory, picSrc } from '~/lib/art';
 import { formatPrice } from '~/lib/format';
 import Icon from './Icon.astro';
 
@@ -39,7 +39,7 @@ const hasPhoto = colourPhotos(first).length > 0;
     <span class="pcard__hole"></span>
     <Image
       class="pcard__img"
-      src={coverImage(first)}
+      {...picSrc(coverImage(first))}
       alt=""
       widths={[240, 360, 480]}
       sizes="(max-width: 640px) 46vw, (max-width: 1100px) 30vw, 260px"

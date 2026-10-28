@@ -65,6 +65,15 @@ export const site = {
   },
 
   /**
+   * Nooma's admin database (Supabase). null → no database: products come from
+   * src/data/sample-products.ts and orders go to WhatsApp only.
+   * Both values are PUBLIC by design (the "anon"/publishable key) — every table
+   * is protected by row-level security in supabase/setup.sql. Never put the
+   * service-role key or any other secret here.
+   */
+  backend: null as null | { supabaseUrl: string; supabaseAnonKey: string },
+
+  /**
    * True while the catalogue in src/data/catalog.ts is sample data.
    * Shows a visible "sample" notice on products and prices.
    * Set to false ONLY after real products, prices and sizes are in place.

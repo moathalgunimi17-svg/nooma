@@ -34,15 +34,24 @@ export const artAlt: Record<ArtKey, Record<Locale, string>> = {
   'mirror-siblings': { ar: 'رسم لأخوين ببيجامات وردية وزرقاء داخل إطار مرآة', en: 'Drawing of two siblings in pink and blue pajamas inside a mirror frame' },
 };
 
-// Real photos live in src/assets/products/<file>; until a colourway has one, its brand illustration stands in (labelled).
+// Real photos are either files in src/assets/products/<file> or https URLs uploaded from the admin
+// (Supabase Storage). Until a colourway has one, its brand illustration stands in (labelled).
 const photoFiles = import.meta.glob<{ default: ImageMetadata }>('/src/assets/products/*.{jpg,jpeg,png,webp,avif}', { eager: true });
 
+/** A local image, or the URL of a photo uploaded from the admin. */
+export type Pic = ImageMetadata | string;
+
 /** A colourway's real photos, or [] when none have been added yet. */
-export const colourPhotos = (c: Colourway): ImageMetadata[] =>
-  c.photos.map((f) => photoFiles[`/src/assets/products/${f}`]?.default).filter((x): x is ImageMetadata => !!x);
+export const colourPhotos = (c: Colourway): Pic[] =>
+  c.photos
+    .map((f) => (/^https:\/\//.test(f) ? f : photoFiles[`/src/assets/products/${f}`]?.default))
+    .filter((x): x is Pic => !!x);
 
 /** First image to show for a colourway: its photo if there is one, otherwise the illustration. */
-export const coverImage = (c: Colourway): ImageMetadata => colourPhotos(c)[0] ?? art[c.art];
+export const coverImage = (c: Colourway): Pic => colourPhotos(c)[0] ?? art[c.art];
+
+/** `src` props for <Image>/getImage — remote photos are measured at build time. */
+export const picSrc = (p: Pic) => (typeof p === 'string' ? { src: p, inferSize: true as const } : { src: p });
 
 export const getProduct = (slug: string) => products.find((p) => p.slug === slug);
 export const getCategory = (id: string) => categories.find((c) => c.id === id);
@@ -54,7 +63,7 @@ export const liveCategories = () => categories.filter((c) => products.some((p) =
 export async function toClient(p: Product): Promise<ClientProduct> {
   const colourways = await Promise.all(
     p.colourways.map(async (c) => {
-      const img = await getImage({ src: coverImage(c), width: 160, format: 'webp' });
+      const img = await getImage({ ...picSrc(coverImage(c)), width: 160, format: 'webp' });
       return { id: c.id, name: c.name, swatch: c.swatch, thumb: img.src };
     }),
   );

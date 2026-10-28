@@ -97,6 +97,7 @@ export interface OrderMessageStrings {
   sampleNote: string;
   closing: string;
   customer: string;
+  orderNo: string;
   name: string;
   phone: string;
   email: string;
@@ -133,7 +134,7 @@ export function buildOrderMessage(
   lines: ResolvedLine[],
   locale: Locale,
   s: OrderMessageStrings,
-  opts: { giftNote?: string; sample?: boolean; customer?: CustomerDetails } = {},
+  opts: { giftNote?: string; sample?: boolean; customer?: CustomerDetails; orderId?: number } = {},
 ): string {
   const t = totals(lines);
   const rows = lines.map((l, i) => {
@@ -144,7 +145,7 @@ export function buildOrderMessage(
       `   ${price}`,
     ].join('\n');
   });
-  const parts = [s.greeting, '', ...rows, ''];
+  const parts = [s.greeting, ...(opts.orderId ? [`${s.orderNo}: #${opts.orderId}`] : []), '', ...rows, ''];
   parts.push(
     t.hasUnpriced
       ? `${s.subtotal}: ${formatPrice(t.subtotal, locale)} + ${s.priceTbc}`
