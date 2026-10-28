@@ -96,17 +96,31 @@ export interface OrderMessageStrings {
   giftNote: string;
   sampleNote: string;
   closing: string;
+  customer: string;
+  name: string;
+  area: string;
+  address: string;
 }
 
+/** Delivery details the customer types into the order dialog. */
+export interface CustomerDetails {
+  name: string;
+  area: string;
+  address: string;
+}
+
+/** One line, trimmed and capped — keeps the message tidy and short. */
+const oneLine = (v: string | undefined, max: number) => (v ?? '').replace(/\s+/g, ' ').trim().slice(0, max);
+
 /**
- * Builds the WhatsApp order text. Contains only what the customer chose —
- * no personal data, no internal configuration.
+ * Builds the WhatsApp order text: what the customer chose plus the delivery
+ * details they typed themselves. No internal configuration.
  */
 export function buildOrderMessage(
   lines: ResolvedLine[],
   locale: Locale,
   s: OrderMessageStrings,
-  opts: { giftNote?: string; sample?: boolean; siteUrl?: string } = {},
+  opts: { giftNote?: string; sample?: boolean; customer?: CustomerDetails } = {},
 ): string {
   const t = totals(lines);
   const rows = lines.map((l, i) => {
@@ -124,6 +138,15 @@ export function buildOrderMessage(
       : `${s.subtotal}: ${formatPrice(t.subtotal, locale)}`,
   );
   parts.push(s.shippingNote);
+  const name = oneLine(opts.customer?.name, 80);
+  const area = oneLine(opts.customer?.area, 80);
+  const address = oneLine(opts.customer?.address, 200);
+  if (name || area || address) {
+    parts.push('', `${s.customer}:`);
+    if (name) parts.push(`${s.name}: ${name}`);
+    if (area) parts.push(`${s.area}: ${area}`);
+    if (address) parts.push(`${s.address}: ${address}`);
+  }
   const note = opts.giftNote?.trim().slice(0, 240);
   if (note) parts.push('', `${s.giftNote}: ${note}`);
   if (opts.sample) parts.push('', s.sampleNote);

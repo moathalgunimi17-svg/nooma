@@ -28,6 +28,7 @@ const catalog: ClientProduct[] = [
 const strings = {
   greeting: 'Hello', size: 'Size', colour: 'Colour', qty: 'Qty', subtotal: 'Subtotal',
   priceTbc: 'price to confirm', shippingNote: 'Delivery: TBC', giftNote: 'Gift note', sampleNote: '(sample)', closing: 'Thanks',
+  customer: 'Delivery details', name: 'Name', area: 'Area', address: 'Address',
 };
 
 describe('quantities', () => {
@@ -98,6 +99,21 @@ describe('order message', () => {
     const msg = buildOrderMessage(lines, 'en', strings, { giftNote: `  ${'x'.repeat(300)}  ` });
     expect(msg).toContain(`Gift note: ${'x'.repeat(240)}`);
     expect(msg).not.toContain('x'.repeat(241));
+  });
+
+  it('adds the delivery details on single, capped lines and skips an empty address', () => {
+    const msg = buildOrderMessage(lines, 'en', strings, {
+      customer: { name: '  Sara\nAli ', area: 'Muscat, Bawshar', address: '   ' },
+    });
+    expect(msg).toContain('Delivery details:\nName: Sara Ali\nArea: Muscat, Bawshar');
+    expect(msg).not.toContain('Address:');
+    const long = buildOrderMessage(lines, 'en', strings, { customer: { name: 'x', area: 'y', address: 'z'.repeat(300) } });
+    expect(long).toContain(`Address: ${'z'.repeat(200)}`);
+    expect(long).not.toContain('z'.repeat(201));
+  });
+
+  it('leaves the details section out when nothing was typed', () => {
+    expect(buildOrderMessage(lines, 'en', strings, { customer: { name: '', area: '', address: '' } })).not.toContain('Delivery details');
   });
 
   it('marks sample orders', () => {

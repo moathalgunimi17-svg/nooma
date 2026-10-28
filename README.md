@@ -69,8 +69,10 @@ The `/cart/` page is excluded from the sitemap and marked `noindex`.
 
 1. The bag lives in the visitor's own browser (`localStorage`, key `nooma.cart.v1`). It holds only product id, colour,
    size and quantity. Prices are always looked up again from the catalogue, so an old bag can never show an old price.
-2. "Order on WhatsApp" builds a message with every item, colour, size, quantity, the subtotal, a note that delivery is
-   confirmed on WhatsApp, and the optional gift note.
+2. "Order on WhatsApp" asks for the customer's name and delivery area (required) and address (optional), then builds a
+   message with every item, colour, size, quantity, the subtotal, a note that delivery is confirmed on WhatsApp, those
+   delivery details and the optional gift note. The customer sends it from their own WhatsApp, so it reaches Nooma
+   from their number. The details are kept in `sessionStorage` for the visit only and never sent to a server.
 3. Then:
    - **`whatsappNumber` is set (current setting, `96896102882`):** `wa.me/<number>?text=<message>` opens with the
      order already typed.
@@ -127,6 +129,7 @@ All logos, characters, the cat, the sun, the star note and the stripe pattern co
 
 - No analytics, pixels, cookies or third-party scripts. Fonts are self-hosted.
 - The contact form doesn't send anything to a server. It opens the visitor's email app addressed to Nooma.
-- Nothing personal is put in URLs. Shop filters in the URL are only colour, size, collection, sort and search text.
+- Shop filters in the URL are only colour, size, collection, sort and search text. The only personal data in any URL is
+  the delivery details the customer typed, inside the `wa.me` link their own device opens to send the order.
 - Catalogue data embedded in pages is JSON-escaped; product text is rendered as text, never as HTML.
 - No structured data is published for sample products, prices or reviews.

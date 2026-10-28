@@ -18,6 +18,24 @@ const t = useT(locale);
   </div>
   <h2 id="order-title">{t('order.title')}</h2>
   <p id="order-text" class="muted" data-order-text>{t('order.text')}</p>
+  <fieldset class="order-dialog__fields" data-order-fields hidden>
+    <legend>{t('order.details')}</legend>
+    <div class="field">
+      <label for="od-name">{t('order.name')}</label>
+      <input class="input" id="od-name" name="name" dir="auto" autocomplete="name" maxlength="80" required aria-describedby="od-name-err" />
+      <p class="field-error" id="od-name-err" data-err="name" data-msg={t('order.err.name')}></p>
+    </div>
+    <div class="field">
+      <label for="od-area">{t('order.area')}</label>
+      <input class="input" id="od-area" name="area" dir="auto" autocomplete="address-level2" maxlength="80" required aria-describedby="od-area-hint od-area-err" />
+      <small id="od-area-hint" class="muted">{t('order.areaHint')}</small>
+      <p class="field-error" id="od-area-err" data-err="area" data-msg={t('order.err.area')}></p>
+    </div>
+    <div class="field">
+      <label for="od-address">{t('order.address')}</label>
+      <input class="input" id="od-address" name="address" dir="auto" autocomplete="street-address" maxlength="200" />
+    </div>
+  </fieldset>
   <label class="order-dialog__label" for="order-message">{t('order.preview')}</label>
   <textarea class="textarea order-dialog__msg" id="order-message" readonly rows="8" data-order-message></textarea>
   <div class="order-dialog__actions">
