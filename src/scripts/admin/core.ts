@@ -12,6 +12,8 @@ export interface AdminConfig {
   sizes: { id: string; label: string }[];
   artKeys: string[];
   sampleCatalog: boolean;
+  /** 'file' → products live in src/data/products.ts; the Products tab is off. */
+  catalogSource: 'file' | 'admin';
 }
 
 export const cfg = JSON.parse(document.getElementById('admin-config')!.textContent!) as AdminConfig;

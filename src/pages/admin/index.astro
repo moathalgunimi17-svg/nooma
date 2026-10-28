@@ -24,6 +24,7 @@ const adminConfig = {
   sizes: sizes.map((s) => ({ id: s.id, label: s.label.ar })),
   artKeys,
   sampleCatalog: site.sampleCatalog,
+  catalogSource: site.catalogSource,
 };
 const safeJson = (v: unknown) => JSON.stringify(v).replaceAll('<', String.fromCharCode(92) + 'u003c');
 ---
@@ -79,7 +80,9 @@ const safeJson = (v: unknown) => JSON.stringify(v).replaceAll('<', String.fromCh
           <button type="button" class="admin-tab" data-tab="orders" aria-pressed="true">
             <Icon name="bag" /> الطلبات <span class="admin-badge" data-new-count hidden></span>
           </button>
-          <button type="button" class="admin-tab" data-tab="products" aria-pressed="false"><Icon name="gift" /> المنتجات</button>
+          {site.catalogSource === 'admin' && (
+            <button type="button" class="admin-tab" data-tab="products" aria-pressed="false"><Icon name="gift" /> المنتجات</button>
+          )}
         </nav>
         <div class="admin-bar__end">
           <button type="button" class="btn btn--sm btn--ghost" data-signout>خروج</button>

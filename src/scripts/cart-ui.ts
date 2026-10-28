@@ -38,7 +38,7 @@ function renderRoot(root: HTMLElement, lines: ResolvedLine[], change?: { type: s
       const img = node.querySelector<HTMLImageElement>('[data-l-img]')!;
       img.src = l.thumb;
       node.querySelector('[data-l-name]')!.textContent = l.product.name[L];
-      node.querySelector('[data-l-meta]')!.textContent = `${l.colourName} · ${l.sizeLabel}`;
+      node.querySelector('[data-l-meta]')!.textContent = [l.product.code, l.colourName, `${s('product.size')} ${l.sizeLabel}`].filter(Boolean).join(' · ');
       const sample = node.querySelector<HTMLElement>('[data-l-sample]')!;
       if (l.product.sample && config.sample) {
         sample.hidden = false;

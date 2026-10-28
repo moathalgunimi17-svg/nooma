@@ -35,6 +35,8 @@ export interface ProductRow {
   compare_at_price: number | string | null;
   size_ids: string[] | null;
   stock: Record<string, number> | null;
+  code?: string | null;
+  size_prices?: Record<string, number | string> | null;
   featured: boolean;
   sample: boolean;
   sort: number;
@@ -69,14 +71,19 @@ export function rowsToProducts(rows: ProductRow[], categories: CategoryDef[], si
     }
     const price = num(r.price);
     const compareAt = num(r.compare_at_price);
+    const sizePrices = r.size_prices
+      ? Object.fromEntries(Object.entries(r.size_prices).map(([k, v]) => [k, Number(v)]).filter(([, v]) => Number.isFinite(v)))
+      : null;
     out.push({
       id: r.id,
+      ...(r.code ? { code: r.code } : {}),
       slug: r.slug,
       name: { ar: r.name_ar, en: r.name_en || r.name_ar },
       summary: { ar: r.summary_ar, en: r.summary_en || r.summary_ar },
       description: { ar: r.description_ar, en: r.description_en || r.description_ar },
       categoryId: r.category_id,
       price,
+      ...(sizePrices && Object.keys(sizePrices).length ? { sizePrices } : {}),
       compareAtPrice: price !== null && compareAt !== null && compareAt > price ? compareAt : null,
       colourways,
       sizeIds,

@@ -49,7 +49,7 @@ function fill(o: Order, delivery: number | null) {
       h('tbody', {}, ...o.items.map((i, n) =>
         h('tr', {},
           h('td', {}, n + 1),
-          h('td', {}, h('strong', {}, i.nameAr), h('br'), h('span', { class: 'invoice__muted' }, `${i.colourAr} · ${sizeLabel(i.sizeId)}`)),
+          h('td', {}, h('strong', {}, i.nameAr), h('br'), h('span', { class: 'invoice__muted' }, [i.code, i.colourAr, `المقاس ${sizeLabel(i.sizeId)}`].filter(Boolean).join(' · '))),
           h('td', {}, i.qty),
           h('td', {}, money(i.unitPrice)),
           h('td', {}, money(i.lineTotal)),

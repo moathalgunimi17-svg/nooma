@@ -12,8 +12,10 @@ import { site, type Locale } from '~/config/site';
 import { useT } from '~/i18n/ui';
 import { href, routes } from '~/i18n/routes';
 import { products } from '~/data/catalog';
-import { art, artAlt, colourPhotos, getCategory, getProduct, picSrc, sizeById, type Pic } from '~/lib/art';
+import { colourPhotos, getCategory, getProduct, picSrc, sizeById } from '~/lib/art';
 import { formatPrice } from '~/lib/format';
+import { priceRange } from '~/lib/order';
+import ogCard from '~/assets/brand/og-card.png';
 
 interface Props { locale: Locale; slug: string }
 const { locale, slug } = Astro.props;
@@ -21,15 +23,11 @@ const t = useT(locale);
 const p = getProduct(slug)!;
 const cat = getCategory(p.categoryId);
 
-const media = p.colourways.map((c) => {
-  const photos = colourPhotos(c);
-  return {
-    colour: c,
-    isArt: photos.length === 0,
-    images: (photos.length ? photos : [art[c.art]]) as Pic[],
-    alt: photos.length ? `${p.name[locale]} — ${c.name[locale]}` : artAlt[c.art][locale],
-  };
-});
+const media = p.colourways.map((c) => ({
+  colour: c,
+  images: colourPhotos(p, c),
+  alt: [p.name[locale], c.name[locale]].filter(Boolean).join(' — '),
+}));
 const thumbs = await Promise.all(
   media.flatMap((m) => m.images.map(async (img) => ({ colour: m.colour.id, src: (await getImage({ ...picSrc(img), width: 160, format: 'webp' })).src }))),
 );
@@ -40,8 +38,15 @@ const related = [
 ].slice(0, 4);
 
 const title = `${p.name[locale]} | ${t('meta.siteName')}`;
-const desc = `${p.summary[locale]} — ${p.description[locale]}`.slice(0, 158);
-const og = (await getImage({ ...picSrc(media[0]!.images[0]!), width: 600, format: 'jpg', background: '#FFF6F5' })).src;
+const desc = ([p.summary[locale], p.description[locale]].filter(Boolean).join(' — ') || [p.name[locale], p.code].filter(Boolean).join(' · ')).slice(0, 158);
+const firstPhoto = media[0]!.images[0];
+const og = firstPhoto
+  ? (await getImage({ ...picSrc(firstPhoto), width: 600, format: 'jpg', background: '#FFF6F5' })).src
+  : (await getImage({ src: ogCard, width: 1200, format: 'jpg' })).src;
+const range = priceRange(p);
+const priceText = range === null
+  ? t('product.priceTbc')
+  : range.min === range.max ? formatPrice(range.min, locale) : t('product.from').replace('{price}', formatPrice(range.min, locale));
 const crumbs = [
   { label: t('common.home'), href: href(locale) },
   ...(cat ? [{ label: cat.name[locale], href: href(locale, routes.collection(cat.slug)) }] : []),
@@ -49,20 +54,29 @@ const crumbs = [
 ];
 
 // Structured data only for real products with real prices — never for samples.
-const productLd = !p.sample && p.price !== null
+const productLd = !p.sample && range !== null
   ? {
       '@context': 'https://schema.org',
       '@type': 'Product',
       name: p.name[locale],
-      description: p.description[locale],
-      image: new URL(og, Astro.site ?? site.domain).href,
+      ...(p.code ? { sku: p.code } : {}),
+      ...(p.description[locale] ? { description: p.description[locale] } : {}),
+      ...(firstPhoto ? { image: new URL(og, Astro.site ?? site.domain).href } : {}),
       brand: { '@type': 'Brand', name: 'Nooma' },
-      offers: {
-        '@type': 'Offer',
-        priceCurrency: site.commerce.currency,
-        price: p.price.toFixed(3),
-        url: new URL(href(locale, routes.product(p.slug)), Astro.site ?? site.domain).href,
-      },
+      offers: range.min === range.max
+        ? {
+            '@type': 'Offer',
+            priceCurrency: site.commerce.currency,
+            price: range.min.toFixed(3),
+            url: new URL(href(locale, routes.product(p.slug)), Astro.site ?? site.domain).href,
+          }
+        : {
+            '@type': 'AggregateOffer',
+            priceCurrency: site.commerce.currency,
+            lowPrice: range.min.toFixed(3),
+            highPrice: range.max.toFixed(3),
+            url: new URL(href(locale, routes.product(p.slug)), Astro.site ?? site.domain).href,
+          },
     }
   : undefined;
 const tint = cat?.tint ?? 'lavender';
@@ -79,19 +93,20 @@ const isSoldOut = (id: string) => (p.stock ? !((p.stock[id] ?? 0) > 0) : false);
           <span class="pdp__hole" aria-hidden="true"></span>
           {media.map((m, i) => (
             <figure class="pdp__slide" data-colour-slide={m.colour.id} hidden={i !== 0}>
-              <Image
-                {...picSrc(m.images[0]!)}
-                alt={m.alt}
-                widths={[360, 560, 760]}
-                sizes="(max-width: 900px) 90vw, 560px"
-                loading={i === 0 ? 'eager' : 'lazy'}
-                fetchpriority={i === 0 ? 'high' : undefined}
-              />
+              {m.images[0] ? (
+                <Image
+                  {...picSrc(m.images[0])}
+                  alt={m.alt}
+                  widths={[360, 560, 760]}
+                  sizes="(max-width: 900px) 90vw, 560px"
+                  loading={i === 0 ? 'eager' : 'lazy'}
+                  fetchpriority={i === 0 ? 'high' : undefined}
+                />
+              ) : (
+                <span class="photo-slot pdp__slot" dir="ltr">{p.code}</span>
+              )}
             </figure>
           ))}
-          {media.some((m) => m.isArt) && (
-            <p class="pdp__art-note"><Icon name="info" /> {t('product.illustration')} · {t('product.photoSoon')}</p>
-          )}
         </div>
         {thumbs.length > 1 && (
           <div class="pdp__thumbs" role="group" aria-label={t('product.colour')}>
@@ -114,17 +129,18 @@ const isSoldOut = (id: string) => (p.stock ? !((p.stock[id] ?? 0) > 0) : false);
           {p.sample && <span class="chip chip--sample">{t('product.sample')}</span>}
         </div>
         <h1 class="pdp__title">{p.name[locale]}</h1>
+        {p.code && <p class="pdp__code">{t('product.code')}: <span dir="ltr">{p.code}</span></p>}
         <p class="pdp__price">
-          {p.price === null ? (
-            <span class="muted">{t('product.priceTbc')}</span>
+          {range === null ? (
+            <span class="muted">{priceText}</span>
           ) : (
             <>
               {p.compareAtPrice && <s class="muted">{formatPrice(p.compareAtPrice, locale)}</s>}
-              <span>{formatPrice(p.price, locale)}</span>
+              <span data-price-now>{priceText}</span>
             </>
           )}
         </p>
-        <p class="pdp__summary">{p.summary[locale]}</p>
+        {p.summary[locale] && <p class="pdp__summary">{p.summary[locale]}</p>}
         {p.sample && <p class="pdp__sample-note"><Icon name="info" /> {t('product.sampleLong')}</p>}
 
         <form class="pdp__form" data-pdp-form novalidate>
@@ -175,10 +191,12 @@ const isSoldOut = (id: string) => (p.stock ? !((p.stock[id] ?? 0) > 0) : false);
         </form>
 
         <div class="pdp__acc">
-          <details open>
-            <summary>{t('product.details')}<Icon name="chevronDown" /></summary>
-            <div><p>{p.description[locale]}</p></div>
-          </details>
+          {p.description[locale] && (
+            <details open>
+              <summary>{t('product.details')}<Icon name="chevronDown" /></summary>
+              <div><p>{p.description[locale]}</p></div>
+            </details>
+          )}
           <details>
             <summary>{t('product.delivery')}<Icon name="chevronDown" /></summary>
             <div>
@@ -206,7 +224,7 @@ const isSoldOut = (id: string) => (p.stock ? !((p.stock[id] ?? 0) > 0) : false);
     <div class="container pdp-bar__inner">
       <div class="pdp-bar__meta">
         <strong>{p.name[locale]}</strong>
-        <span>{p.price === null ? t('product.priceTbc') : formatPrice(p.price, locale)}</span>
+        <span data-price-now>{priceText}</span>
       </div>
       <button class="btn btn--sm" type="button" data-bar-add disabled={p.price === null}><Icon name="bag" /> {t('product.add')}</button>
     </div>

@@ -2,18 +2,18 @@
  * ─────────────────────────────────────────────────────────────────────────
  *  CATALOGUE
  *
- *  Categories and sizes are fixed here. Products come from Nooma's admin
- *  (the Supabase database) when site.backend is set, read once at build
- *  time; otherwise the SAMPLE products in ./sample-products.ts are used.
- *  While `site.sampleCatalog` is true, sample-flagged products show a
- *  visible "sample" label.
+ *  Categories and sizes are fixed in ./taxonomy.ts. Products come from
+ *  ./products.ts (Nooma's own list) while site.catalogSource is 'file'.
+ *  With 'admin' they are read once at build time from the admin database.
  * ─────────────────────────────────────────────────────────────────────────
  */
 import type { Product } from './types';
+import { site } from '~/config/site';
 import { categories, sizes } from './taxonomy';
-import { sampleProducts } from './sample-products';
+import { products as fileProducts } from './products';
 import { loadProducts } from './remote';
 
 export { categories, sizes };
 
-export const products: Product[] = await loadProducts(sampleProducts, categories, sizes);
+export const products: Product[] =
+  site.catalogSource === 'file' ? fileProducts : await loadProducts(fileProducts, categories, sizes);

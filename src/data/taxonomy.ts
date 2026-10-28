@@ -6,7 +6,7 @@ export const categories: CategoryDef[] = [
     id: 'girls',
     slug: 'girls',
     name: { ar: 'للبنات', en: 'For girls' },
-    blurb: { ar: 'قلوب وألوان وردية هادئة', en: 'Hearts and quiet pinks' },
+    blurb: { ar: 'بيجامات البنات', en: "Girls' pajamas" },
     art: 'kid-facemask',
     tint: 'blush',
   },
@@ -14,7 +14,7 @@ export const categories: CategoryDef[] = [
     id: 'boys',
     slug: 'boys',
     name: { ar: 'للأولاد', en: 'For boys' },
-    blurb: { ar: 'غيوم ومربعات بدرجات الأزرق', en: 'Clouds and soft blue checks' },
+    blurb: { ar: 'بيجامات الأولاد', en: "Boys' pajamas" },
     art: 'kid-camera',
     tint: 'lavender',
   },
@@ -22,17 +22,22 @@ export const categories: CategoryDef[] = [
     id: 'everyone',
     slug: 'everyone',
     name: { ar: 'للجميع', en: 'For everyone' },
-    blurb: { ar: 'خطوط وفيونكات تناسب الكل', en: 'Stripes and bows for anyone' },
+    blurb: { ar: 'بيجامات تناسب الجميع', en: 'Pajamas for everyone' },
     art: 'kid-reading',
     tint: 'butter',
   },
+  {
+    id: 'mom-baby',
+    slug: 'mom-baby',
+    name: { ar: 'ماما وبيبي', en: 'Mom & baby' },
+    blurb: { ar: 'مقاسات من 90 إلى 170', en: 'Sizes 90 to 170' },
+    art: 'mirror-siblings',
+    tint: 'peach',
+  },
 ];
 
-export const sizes: SizeDef[] = [
-  { id: '2y', label: { ar: 'سنتان', en: '2 yrs' } },
-  { id: '3y', label: { ar: '3 سنوات', en: '3 yrs' } },
-  { id: '4y', label: { ar: '4 سنوات', en: '4 yrs' } },
-  { id: '5y', label: { ar: '5 سنوات', en: '5 yrs' } },
-  { id: '6y', label: { ar: '6 سنوات', en: '6 yrs' } },
-  { id: '8y', label: { ar: '8 سنوات', en: '8 yrs' } },
-];
+/** Nooma's sizes, exactly as in their product sheet. */
+export const sizes: SizeDef[] = ['90', '100', '110', '120', '130', '140', '150', '160', '170'].map((n) => ({
+  id: n,
+  label: { ar: n, en: n },
+}));

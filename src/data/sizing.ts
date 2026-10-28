@@ -10,13 +10,8 @@ export interface SizeMeasurements {
   waist: string | null;
 }
 
-export const sizing: Record<string, SizeMeasurements> = {
-  '2y': { height: null, chest: null, waist: null },
-  '3y': { height: null, chest: null, waist: null },
-  '4y': { height: null, chest: null, waist: null },
-  '5y': { height: null, chest: null, waist: null },
-  '6y': { height: null, chest: null, waist: null },
-  '8y': { height: null, chest: null, waist: null },
-};
+export const sizing: Record<string, SizeMeasurements> = Object.fromEntries(
+  ['90', '100', '110', '120', '130', '140', '150', '160', '170'].map((id) => [id, { height: null, chest: null, waist: null }]),
+);
 
 export const sizingConfirmed = Object.values(sizing).some((m) => m.height || m.chest || m.waist);

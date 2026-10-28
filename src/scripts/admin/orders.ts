@@ -5,6 +5,7 @@ import { parseAmount } from '~/lib/order';
 
 export interface OrderItem {
   productId: string;
+  code?: string;
   slug: string;
   nameAr: string;
   colourAr: string;
@@ -172,7 +173,7 @@ function openOrder(id: number) {
       h('thead', {}, h('tr', {}, h('th', {}, 'المنتج'), h('th', {}, 'الكمية'), h('th', {}, 'المجموع'))),
       h('tbody', {}, ...o.items.map((i) =>
         h('tr', {},
-          h('td', {}, h('strong', {}, i.nameAr), h('br'), h('span', { class: 'muted' }, `${i.colourAr} · ${sizeLabel(i.sizeId)} · ${money(i.unitPrice)}`)),
+          h('td', {}, h('strong', {}, i.nameAr), h('br'), h('span', { class: 'muted' }, [i.code, i.colourAr, `المقاس ${sizeLabel(i.sizeId)}`, money(i.unitPrice)].filter(Boolean).join(' · '))),
           h('td', {}, `× ${i.qty}`),
           h('td', {}, money(i.lineTotal)),
         ))),

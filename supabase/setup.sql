@@ -68,6 +68,14 @@ create table if not exists public.colourways (
   primary key (product_id, id)
 );
 
+-- Nooma's product list (src/data/products.ts): the product code, and a price per size
+-- when sizes cost different amounts ({"100": 4.7, "130": 5.7}). A single-colour product
+-- has no colour name.
+alter table public.products add column if not exists code text;
+alter table public.products add column if not exists size_prices jsonb;
+alter table public.colourways drop constraint if exists colourways_name_ar_check;
+alter table public.colourways add constraint colourways_name_ar_check check (length(name_ar) <= 60);
+
 alter table public.products enable row level security;
 alter table public.colourways enable row level security;
 
@@ -126,7 +134,7 @@ create policy "admins delete orders" on public.orders for delete to authenticate
     customer: { name, phone, email?, area, address? },
     lines: [{ productId, colourId, sizeId, qty }]
   }
-  Prices are read from the products table, never from the browser.
+  Prices are read from the products table (the size's own price when set), never from the browser.
   Returns { id, subtotal }.
 */
 create or replace function public.place_order(payload jsonb) returns jsonb
@@ -147,6 +155,7 @@ declare
   v_sample boolean := false;
   v_qty integer;
   v_total numeric(10, 3);
+  v_price numeric(10, 3);
   p public.products%rowtype;
   cw public.colourways%rowtype;
   v_id bigint;
@@ -189,17 +198,18 @@ begin
     if not ((v_line ->> 'sizeId') = any (p.size_ids)) then
       raise exception 'size_unavailable' using errcode = '22023';
     end if;
+    v_price := coalesce((p.size_prices ->> (v_line ->> 'sizeId'))::numeric, p.price);
     select * into cw from public.colourways where product_id = p.id and id = v_line ->> 'colourId';
     if not found then
       raise exception 'colour_unavailable' using errcode = '22023';
     end if;
-    v_total := round(p.price * v_qty, 3);
+    v_total := round(v_price * v_qty, 3);
     v_subtotal := v_subtotal + v_total;
     v_sample := v_sample or p.sample;
     v_items := v_items || jsonb_build_array(jsonb_build_object(
-      'productId', p.id, 'slug', p.slug, 'nameAr', p.name_ar, 'nameEn', p.name_en,
+      'productId', p.id, 'code', p.code, 'slug', p.slug, 'nameAr', p.name_ar, 'nameEn', p.name_en,
       'colourId', cw.id, 'colourAr', cw.name_ar, 'colourEn', cw.name_en,
-      'sizeId', v_line ->> 'sizeId', 'qty', v_qty, 'unitPrice', p.price, 'lineTotal', v_total));
+      'sizeId', v_line ->> 'sizeId', 'qty', v_qty, 'unitPrice', v_price, 'lineTotal', v_total));
   end loop;
 
   insert into public.orders (locale, customer_name, customer_phone, customer_email, customer_area,

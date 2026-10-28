@@ -65,8 +65,8 @@ export const site = {
   },
 
   /**
-   * Nooma's admin database (Supabase). null → no database: products come from
-   * src/data/sample-products.ts and orders go to WhatsApp only.
+   * Nooma's admin database (Supabase). null → no database: orders go to
+   * WhatsApp only and are not recorded in the admin.
    * Both values are PUBLIC by design (the "anon"/publishable key) — every table
    * is protected by row-level security in supabase/setup.sql. Never put the
    * service-role key or any other secret here.
@@ -78,11 +78,18 @@ export const site = {
   } as null | { supabaseUrl: string; supabaseAnonKey: string },
 
   /**
+   * Where the shop's products come from:
+   *  - 'file'  → src/data/products.ts (current). The admin keeps orders only.
+   *  - 'admin' → the admin's Products tab (read from the database at build time).
+   */
+  catalogSource: 'file' as 'file' | 'admin',
+
+  /**
    * True while the catalogue in src/data/catalog.ts is sample data.
    * Shows a visible "sample" notice on products and prices.
    * Set to false ONLY after real products, prices and sizes are in place.
    */
-  sampleCatalog: true,
+  sampleCatalog: false,
 } as const;
 
 export type Locale = 'ar' | 'en';

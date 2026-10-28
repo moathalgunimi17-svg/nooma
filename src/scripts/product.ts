@@ -1,4 +1,5 @@
-import { clampQty, resolveLines } from '~/lib/order';
+import { clampQty, resolveLines, sizePrice } from '~/lib/order';
+import { formatPrice } from '~/lib/format';
 import { catalog, config, productById, s, reducedMotion } from './env';
 import { cart } from './store';
 import { addedToast, flyToBag } from './cart-ui';
@@ -41,10 +42,18 @@ if (root) {
     if (input && !input.checked) input.checked = true;
     if (colourName && input) colourName.textContent = input.dataset.name ?? '';
   }
+  // Sizes can cost different amounts: show the chosen size's price.
+  const priceNow = [...document.querySelectorAll<HTMLElement>('[data-price-now]')];
+  function showSizePrice(size: string) {
+    const price = sizePrice(product, size);
+    if (price !== null) priceNow.forEach((el) => (el.textContent = formatPrice(price, config.locale)));
+  }
+
   form.addEventListener('change', (e) => {
     const t = e.target as HTMLInputElement;
     if (t.name === 'colour') showColour(t.value);
     if (t.name === 'size') {
+      showSizePrice(t.value);
       sizeError.textContent = '';
       sizeList.classList.remove('is-invalid');
     }

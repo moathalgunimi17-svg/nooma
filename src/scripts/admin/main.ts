@@ -1,5 +1,5 @@
 /** Admin entry: decides which screen to show, handles sign-in and tabs. */
-import { $, $$, explain, sb } from './core';
+import { $, $$, cfg, explain, sb } from './core';
 import { initOrders } from './orders';
 import { initProducts } from './products';
 import { initPublish } from './publish';
@@ -26,7 +26,7 @@ async function enter() {
   show('app');
   if (started) return;
   started = true;
-  await Promise.all([initOrders(), initProducts(), initPublish()]);
+  await Promise.all(cfg.catalogSource === 'admin' ? [initOrders(), initProducts(), initPublish()] : [initOrders()]);
 }
 
 function initTabs() {

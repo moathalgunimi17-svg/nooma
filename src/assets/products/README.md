@@ -1,7 +1,8 @@
-Put real product photos here (jpg, png, webp or avif), then list the file
-names on each colourway in src/data/catalog.ts, e.g.
+Put Nooma's product photos here (jpg, png, webp or avif), named after the
+product code from src/data/products.ts:
 
-  { id: 'blush', ..., photos: ['little-hearts-blush-1.jpg', 'little-hearts-blush-2.jpg'], art: 'kid-facemask' }
+  PJ001.jpg        → first photo (card, cart, product page)
+  PJ001-2.jpg      → more photos of the same product, in number order
 
-The first photo becomes the card and cart image. Colourways with no photos
-keep showing their labelled brand illustration.
+Nothing else needs to change: the build picks them up by code. Until a
+product has a photo, its code is shown where the photo goes.

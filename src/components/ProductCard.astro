@@ -8,8 +8,9 @@ import type { Locale } from '~/config/site';
 import type { Product } from '~/data/types';
 import { useT } from '~/i18n/ui';
 import { href, routes } from '~/i18n/routes';
-import { colourPhotos, coverImage, getCategory, picSrc } from '~/lib/art';
+import { coverImage, getCategory, picSrc } from '~/lib/art';
 import { formatPrice } from '~/lib/format';
+import { priceRange } from '~/lib/order';
 import Icon from './Icon.astro';
 
 interface Props { product: Product; locale: Locale; index?: number; eager?: boolean }
@@ -19,7 +20,8 @@ const cat = getCategory(p.categoryId);
 const first = p.colourways[0]!;
 const url = href(locale, routes.product(p.slug));
 const tint = cat?.tint ?? 'lavender';
-const hasPhoto = colourPhotos(first).length > 0;
+const cover = coverImage(p, first);
+const range = priceRange(p);
 ---
 <article
   class="pcard"
@@ -28,7 +30,7 @@ const hasPhoto = colourPhotos(first).length > 0;
   data-category={p.categoryId}
   data-sizes={p.sizeIds.join(' ')}
   data-colours={p.colourways.map((c) => c.id).join(' ')}
-  data-price={p.price ?? ''}
+  data-price={range?.min ?? ''}
   data-featured={p.featured ? '1' : '0'}
   data-order={index}
   data-name={p.name[locale]}
@@ -37,36 +39,42 @@ const hasPhoto = colourPhotos(first).length > 0;
 >
   <a class="pcard__media" href={url} tabindex="-1" aria-hidden="true">
     <span class="pcard__hole"></span>
-    <Image
-      class="pcard__img"
-      {...picSrc(coverImage(first))}
-      alt=""
-      widths={[240, 360, 480]}
-      sizes="(max-width: 640px) 46vw, (max-width: 1100px) 30vw, 260px"
-      loading={eager ? 'eager' : 'lazy'}
-    />
-    {!hasPhoto && <span class="chip chip--art pcard__art-label">{t('product.illustration')}</span>}
+    {cover ? (
+      <Image
+        class="pcard__img"
+        {...picSrc(cover)}
+        alt=""
+        widths={[240, 360, 480]}
+        sizes="(max-width: 640px) 46vw, (max-width: 1100px) 30vw, 260px"
+        loading={eager ? 'eager' : 'lazy'}
+      />
+    ) : (
+      <span class="photo-slot pcard__slot" dir="ltr">{p.code}</span>
+    )}
   </a>
   <div class="pcard__body">
     {p.sample && <span class="chip chip--sample pcard__sample">{t('product.sample')}</span>}
     <h3 class="pcard__name"><a href={url}>{p.name[locale]}</a></h3>
-    <p class="pcard__summary">{p.summary[locale]}</p>
+    {p.code && <p class="pcard__code">{p.code}</p>}
+    {p.summary[locale] && <p class="pcard__summary">{p.summary[locale]}</p>}
     <div class="pcard__foot">
       <p class="pcard__price">
-        {p.price === null ? (
+        {range === null ? (
           <span class="muted">{t('product.priceTbc')}</span>
         ) : (
           <>
             {p.compareAtPrice && <s class="muted">{formatPrice(p.compareAtPrice, locale)}</s>}
-            <span>{formatPrice(p.price, locale)}</span>
+            <span>{range.min === range.max ? formatPrice(range.min, locale) : t('product.from').replace('{price}', formatPrice(range.min, locale))}</span>
           </>
         )}
       </p>
-      <ul role="list" class="pcard__swatches" aria-label={t('product.colour')}>
-        {p.colourways.map((c) => (
-          <li style={`--sw: ${c.swatch}`} title={c.name[locale]}><span class="visually-hidden">{c.name[locale]}</span></li>
-        ))}
-      </ul>
+      {p.colourways.length > 1 && (
+        <ul role="list" class="pcard__swatches" aria-label={t('product.colour')}>
+          {p.colourways.map((c) => (
+            <li style={`--sw: ${c.swatch}`} title={c.name[locale]}><span class="visually-hidden">{c.name[locale]}</span></li>
+          ))}
+        </ul>
+      )}
     </div>
     <button class="btn btn--soft btn--sm pcard__add" type="button" data-quick-add={p.id} disabled={p.price === null}>
       <Icon name="bag" /> {t('product.quickAdd')}

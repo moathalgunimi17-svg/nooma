@@ -1,4 +1,5 @@
 import { formatPrice } from '~/lib/format';
+import { priceRange, sizePrice } from '~/lib/order';
 import { config, productById, s } from './env';
 import { cart } from './store';
 import { closeDialog, openDialog } from './ui';
@@ -41,7 +42,10 @@ export function initQuickAdd() {
     current = p.id;
     opener = btn;
     d.querySelector('[data-qa-name]')!.textContent = p.name[L];
-    d.querySelector('[data-qa-price]')!.textContent = formatPrice(p.price, L);
+    const range = priceRange(p)!;
+    d.querySelector('[data-qa-price]')!.textContent = range.min === range.max
+      ? formatPrice(range.min, L)
+      : s('product.from').replace('{price}', formatPrice(range.min, L));
     d.querySelector<HTMLAnchorElement>('[data-qa-link]')!.href = config.productBase + p.slug + '/';
     img.src = p.colourways[0]!.thumb;
     err.textContent = '';
@@ -71,7 +75,9 @@ export function initQuickAdd() {
     openDialog(d, btn);
   });
 
-  sizeList.addEventListener('change', () => {
+  sizeList.addEventListener('change', (e) => {
+    const price = sizePrice(productById.get(current)!, (e.target as HTMLInputElement).value);
+    if (price !== null) d.querySelector('[data-qa-price]')!.textContent = formatPrice(price, L);
     err.textContent = '';
     sizeList.classList.remove('is-invalid');
   });

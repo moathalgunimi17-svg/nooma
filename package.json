@@ -10,7 +10,8 @@
     "preview": "astro preview --port 5201 --host 127.0.0.1",
     "check": "astro check",
     "test": "vitest run",
-    "deploy:preview": "bash tools/deploy-preview.sh"
+    "deploy:preview": "bash tools/deploy-preview.sh",
+    "catalog:sql": "node tools/catalog-sql.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.12",

@@ -32,14 +32,20 @@ export interface Colourway {
   name: L10n;
   /** Swatch colour (display only). */
   swatch: string;
-  /** Real product photos, relative to src/assets/products/. Empty → art fallback. */
+  /** Extra photo files (relative to src/assets/products/) or admin-uploaded URLs. */
   photos: string[];
-  /** Brand illustration used until real photos exist. Always labelled as an illustration. */
-  art: ArtKey;
+  /** Kept for products that come from the admin database; not shown on product pages. */
+  art?: ArtKey;
 }
 
 export interface Product {
   id: string;
+  /**
+   * Nooma's product code (e.g. "PJ001"). Photos named after it in
+   * src/assets/products/ (PJ001.jpg, PJ001-2.jpg…) are picked up automatically;
+   * until one exists, the code is shown where the photo goes.
+   */
+  code?: string;
   slug: string;
   name: L10n;
   summary: L10n;
@@ -47,6 +53,8 @@ export interface Product {
   categoryId: string;
   /** Price in OMR. null = not yet confirmed (product can be browsed, not added). */
   price: number | null;
+  /** Price per size id, when sizes cost different amounts. `price` is then the lowest. */
+  sizePrices?: Record<string, number>;
   /** Previous price — set ONLY when a real sale is running. */
   compareAtPrice?: number | null;
   colourways: Colourway[];
@@ -65,8 +73,10 @@ export interface Product {
 export interface ClientProduct {
   id: string;
   slug: string;
+  code?: string;
   name: L10n;
   price: number | null;
+  sizePrices?: Record<string, number>;
   categoryId: string;
   sizes: { id: string; label: L10n }[];
   colourways: { id: string; name: L10n; swatch: string; thumb: string }[];

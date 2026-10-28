@@ -65,6 +65,8 @@
 .pdp__chips a.chip { text-decoration: none; }
 .pdp__chips a.chip:hover { background: var(--color-lavender); }
 .pdp__title { font-size: var(--text-3xl); margin-bottom: var(--space-2xs); }
+.pdp__code { margin: 0 0 var(--space-2xs); font-size: var(--text-sm); color: var(--color-ink-muted); letter-spacing: 0.04em; }
+.pdp__slot { font-size: clamp(2.5rem, 7vw, 4rem); }
 .pdp__price { font-size: var(--text-xl); font-weight: 700; margin-bottom: var(--space-sm); display: flex; gap: 0.6rem; align-items: baseline; font-variant-numeric: tabular-nums; }
 .pdp__price s { font-size: var(--text-base); font-weight: 400; }
 .pdp__summary { color: var(--color-ink-muted); font-size: var(--text-lg); }

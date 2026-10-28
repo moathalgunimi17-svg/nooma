@@ -4,9 +4,9 @@ A bilingual (Arabic first, English second) static storefront for Nooma's childre
 Customers browse the catalogue, fill a bag, and send the order to Nooma on WhatsApp.
 The site takes no payments and stores no customer data on a server.
 
-> **The catalogue is sample data.** The products, prices and sizes in `src/data/catalog.ts` were made up so that
-> the shop, the filters, the cart and the WhatsApp order could be built and tested. Every sample product shows a
-> visible "sample" label until it is replaced. See [Before launch](#before-launch).
+> **Products** are Nooma's own list in `src/data/products.ts` (16 pajamas, codes PJ001–PJ016, from
+> "Nooma products.xlsx": model, sizes and selling price per size; cost and profit are never used).
+> Photos are added later by code — see [Products and photos](#products-and-photos).
 
 ## Run it
 
@@ -65,6 +65,16 @@ SITE_URL=https://example.github.io BASE_PATH=/nooma/ npm run build
 Update `public/robots.txt` if the domain changes (it points to `https://nooma.om/sitemap-index.xml`).
 The `/cart/` page is excluded from the sitemap and marked `noindex`.
 
+## Products and photos
+
+- Each product has a code (PJ001…). Until its photo exists, the code is shown where the photo goes.
+- **Photos:** save them in `src/assets/products/` named after the code: `PJ001.jpg`, then `PJ001-2.jpg` for more.
+  Nothing else changes.
+- **Sizes** are 90–170 (no ages). A size with no stock in the sheet is not listed. Each size can have its own
+  price; cards show "from" the lowest one, and the product page, cart and order use the chosen size's price.
+- **After editing `src/data/products.ts`:** run `npm run catalog:sql`, then paste `supabase/catalog.sql` into
+  Supabase → SQL Editor → Run, so recorded orders use the same products and prices.
+
 ## How ordering works
 
 1. The bag lives in the visitor's own browser (`localStorage`, key `nooma.cart.v1`). It holds only product id, colour,
@@ -95,8 +105,8 @@ phone-friendly and never indexed. It needs a free [Supabase](https://supabase.co
   (with a sound when a new one arrives), filters by status, searches, shows the customer and items, changes status
   (new → preparing → shipped → delivered / cancelled), keeps internal notes, and opens a WhatsApp chat or call.
   Prices are always taken from the database by `place_order()`, never from the browser.
-- **Products**: add, edit, hide, delete; Arabic/English text, category, price, sale price, sizes, colours, and photos
-  (resized on the phone to WebP, stored in Supabase Storage).
+- **Products** (only when `site.catalogSource` is `'admin'`; it is `'file'` now, so the tab is hidden and the shop
+  reads `src/data/products.ts`): add, edit, hide, delete, photos.
 - **Publish**: the site is static, so product changes go live when the owner taps **نشر الآن**. That calls the
   `publish` Supabase function, which starts `.github/workflows/publish.yml` to rebuild and redeploy (≈2 minutes).
 
@@ -125,8 +135,9 @@ flood guard) was tested on PGlite with stand-ins for Supabase's `auth` and `stor
 | To change… | Edit |
 | --- | --- |
 | Contacts, WhatsApp number, announcement bar, shipping rule, sample flag | `src/config/site.ts` |
-| Products (without the admin), collections, sizes | `src/data/sample-products.ts`, `src/data/taxonomy.ts` |
-| Product photos | `src/assets/products/` (see the README there) |
+| Products, prices per size | `src/data/products.ts` (then `npm run catalog:sql`) |
+| Collections, sizes | `src/data/taxonomy.ts` |
+| Product photos | `src/assets/products/`, named by code (see the README there) |
 | Size chart measurements | `src/data/sizing.ts` |
 | Shipping / returns / privacy / terms wording | `src/data/policies.ts` |
 | Every piece of interface text, Arabic and English | `src/i18n/ui.ts` |
@@ -137,11 +148,9 @@ All logos, characters, the cat, the sun, the star note and the stripe pattern co
 
 ## Before launch
 
-1. **Replace the catalogue.** Put Nooma's real products into `src/data/catalog.ts` (same shape as the sample entries),
-   set `sample: false` on each, and set `price: null` for anything whose price isn't confirmed — it then shows
-   "price on request" and can't be added to the bag.
-2. **Add photos** to `src/assets/products/` and list the file names on each colourway's `photos`.
-3. **Set `sampleCatalog: false`** in `src/config/site.ts`. This removes the sample notices.
+1. ~~Replace the catalogue~~ — done: `src/data/products.ts`. PJ013 has no selling price yet (shows "price on request").
+2. **Add photos** to `src/assets/products/`, named by code (`PJ001.jpg`).
+3. ~~Set `sampleCatalog: false`~~ — done.
 4. ~~Confirm the WhatsApp number~~ — done: `+968 96102882`, set in `src/config/site.ts`.
 5. **Fill in what's marked "to be confirmed"**: size measurements, shipping fees and times, returns, payment methods,
    privacy contact. Each page shows exactly which answers are still missing.

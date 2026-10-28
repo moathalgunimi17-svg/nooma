@@ -92,6 +92,8 @@ const ar = {
   'product.illustration': 'رسم توضيحي',
   'product.photoSoon': 'صور المنتج الحقيقية قريباً',
   'product.priceTbc': 'السعر عند الطلب',
+  'product.from': 'من {price}',
+  'product.code': 'رمز المنتج',
   'product.view': 'عرض التفاصيل',
   'product.quickAdd': 'اختيار المقاس',
   'product.colour': 'اللون',
@@ -114,7 +116,7 @@ const ar = {
   'product.colours': '{n} ألوان',
 
   'shop.title': 'كل البيجامات',
-  'shop.desc': 'تصفّحي بيجامات نُومة للأطفال، وصفّي حسب المجموعة والمقاس واللون.',
+  'shop.desc': 'تصفّحي بيجامات نُومة للأطفال، وصفّي حسب المجموعة والمقاس.',
   'shop.filters': 'التصفية',
   'shop.showFilters': 'تصفية وترتيب',
   'shop.applyFilters': 'عرض النتائج',
@@ -137,8 +139,8 @@ const ar = {
   'shop.emptyText': 'جرّبي إزالة بعض عوامل التصفية، أو راسلينا ونساعدك.',
 
   'search.title': 'ابحثي في نُومة',
-  'search.placeholder': 'غيوم، قلوب، خطوط…',
-  'search.hint': 'اكتبي اسم النقشة أو اللون',
+  'search.placeholder': 'الاسم أو الرمز، مثل PJ001',
+  'search.hint': 'اكتبي اسم البيجامة أو رمزها',
   'search.empty': 'لم نجد نتائج لـ «{q}»',
   'search.results': '{n} نتائج',
 
@@ -225,7 +227,7 @@ const ar = {
   'size.col.waist': 'الخصر (سم)',
   'size.tbc': 'يُؤكَّد',
   'size.help': 'محتارة بين مقاسين؟',
-  'size.helpText': 'أرسلي لنا عمر طفلك وطوله عبر الواتساب ونساعدك في الاختيار.',
+  'size.helpText': 'راسلينا عبر الواتساب ونساعدك في اختيار المقاس.',
 
   'about.title': 'عن نُومة',
   'about.desc': 'نُومة علامة بيجامات أطفال من عُمان، تصمم لحظات نوم هادئة وصباحات سعيدة.',
@@ -270,7 +272,7 @@ const ar = {
   'faq.q3': 'هل توصلون خارج عُمان؟',
   'faq.a3': 'نعم، نوصل لجميع دول العالم. تُؤكَّد الرسوم والمدة حسب بلدك عند الطلب.',
   'faq.q4': 'كيف أختار المقاس المناسب؟',
-  'faq.a4': 'اطّلعي على دليل المقاسات، وإذا كنتِ محتارة أرسلي لنا عمر طفلك وطوله عبر الواتساب.',
+  'faq.a4': 'اطّلعي على دليل المقاسات، وإذا كنتِ محتارة راسلينا عبر الواتساب ونساعدك.',
   'faq.q5': 'هل يمكنني الطلب بالجملة؟',
   'faq.a5': 'نعم، راسلينا على البريد الإلكتروني وسيتواصل معك الفريق.',
   'faq.q6': 'ما طرق الدفع المتاحة؟',
@@ -399,6 +401,8 @@ const en = {
   'product.illustration': 'Illustration',
   'product.photoSoon': 'Real product photos coming soon',
   'product.priceTbc': 'Price on request',
+  'product.from': 'From {price}',
+  'product.code': 'Product code',
   'product.view': 'View details',
   'product.quickAdd': 'Choose size',
   'product.colour': 'Colour',
@@ -421,7 +425,7 @@ const en = {
   'product.colours': '{n} colours',
 
   'shop.title': 'All pajamas',
-  'shop.desc': "Browse Nooma's children's pajamas and filter by collection, size and colour.",
+  'shop.desc': "Browse Nooma's children's pajamas and filter by collection and size.",
   'shop.filters': 'Filters',
   'shop.showFilters': 'Filter & sort',
   'shop.applyFilters': 'Show results',
@@ -444,8 +448,8 @@ const en = {
   'shop.emptyText': 'Try removing a filter, or message us and we will help.',
 
   'search.title': 'Search Nooma',
-  'search.placeholder': 'Clouds, hearts, stripes…',
-  'search.hint': 'Type a pattern or colour',
+  'search.placeholder': 'Name or code, e.g. PJ001',
+  'search.hint': 'Type a pajama name or code',
   'search.empty': 'No results for “{q}”',
   'search.results': '{n} results',
 
@@ -532,7 +536,7 @@ const en = {
   'size.col.waist': 'Waist (cm)',
   'size.tbc': 'TBC',
   'size.help': 'Between two sizes?',
-  'size.helpText': "Send us your child's age and height on WhatsApp and we will help you choose.",
+  'size.helpText': 'Message us on WhatsApp and we will help you choose the size.',
 
   'about.title': 'About Nooma',
   'about.desc': "Nooma is a children's pajama brand from Oman, designing calm bedtimes and happy mornings.",
@@ -577,7 +581,7 @@ const en = {
   'faq.q3': 'Do you deliver outside Oman?',
   'faq.a3': 'Yes, we deliver worldwide. Fees and timing for your country are confirmed when you order.',
   'faq.q4': 'How do I choose the right size?',
-  'faq.a4': "Check the size guide, and if you're unsure send us your child's age and height on WhatsApp.",
+  'faq.a4': "Check the size guide, and if you're unsure message us on WhatsApp and we will help.",
   'faq.q5': 'Can I order wholesale?',
   'faq.a5': 'Yes — email us and the team will get in touch.',
   'faq.q6': 'Which payment methods are available?',

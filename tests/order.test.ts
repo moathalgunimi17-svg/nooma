@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  asciiDigits, buildOrderMessage, parseAmount, clampQty, lineKey, resolveLines, totals, validEmail, validPhone, whatsappOrderUrl,
+  asciiDigits, buildOrderMessage, parseAmount, priceRange, sizePrice, clampQty, lineKey, resolveLines, totals, validEmail, validPhone, whatsappOrderUrl,
 } from '~/lib/order';
 import { formatPrice, roundOmr } from '~/lib/format';
 import { matches, normalize } from '~/lib/search';
@@ -143,6 +143,35 @@ describe('order message', () => {
   it('builds a wa.me link only from digits and encodes the text', () => {
     const url = whatsappOrderUrl('+968 9xx-123', 'Hi & bye');
     expect(url).toBe('https://wa.me/9689123?text=Hi%20%26%20bye');
+  });
+});
+
+describe('prices per size', () => {
+  const bySize: ClientProduct = {
+    id: 'pj001', code: 'PJ001', slug: 'pj001', name: { ar: 'البنت الزرقاء', en: 'Blue Girl' }, price: 4.7,
+    sizePrices: { '100': 4.7, '130': 5.7 }, categoryId: 'girls',
+    sizes: [{ id: '100', label: { ar: '100', en: '100' } }, { id: '130', label: { ar: '130', en: '130' } }],
+    colourways: [{ id: 'main', name: { ar: '', en: '' }, swatch: '#d0d5e6', thumb: '/s.webp' }],
+    sample: false, search: '',
+  };
+
+  it("uses the chosen size's price for the line and the total", () => {
+    expect(sizePrice(bySize, '130')).toBe(5.7);
+    expect(priceRange(bySize)).toEqual({ min: 4.7, max: 5.7 });
+    const lines = resolveLines(
+      [{ productId: 'pj001', colourId: 'main', sizeId: '130', qty: 2 }, { productId: 'pj001', colourId: 'main', sizeId: '100', qty: 1 }],
+      [bySize], 'en', 10,
+    );
+    expect(lines.map((l) => l.unitPrice)).toEqual([5.7, 4.7]);
+    expect(totals(lines).subtotal).toBe(16.1);
+  });
+
+  it('names the product code and leaves out an empty colour in the message', () => {
+    const lines = resolveLines([{ productId: 'pj001', colourId: 'main', sizeId: '130', qty: 1 }], [bySize], 'en', 10);
+    const msg = buildOrderMessage(lines, 'en', strings);
+    expect(msg).toContain('1. Blue Girl (PJ001)');
+    expect(msg).toContain('   Size: 130 · Qty: 1');
+    expect(msg).not.toContain('Colour');
   });
 });
 

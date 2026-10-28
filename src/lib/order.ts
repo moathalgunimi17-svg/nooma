@@ -26,6 +26,19 @@ export interface ResolvedLine extends CartLine {
 export const lineKey = (l: Pick<CartLine, 'productId' | 'colourId' | 'sizeId'>) =>
   `${l.productId}|${l.colourId}|${l.sizeId}`;
 
+type Priced = { price: number | null; sizePrices?: Record<string, number> };
+
+/** Price of one size: its own price when sizes cost different amounts, otherwise the product price. */
+export const sizePrice = (p: Priced, sizeId: string): number | null =>
+  p.price === null ? null : (p.sizePrices?.[sizeId] ?? p.price);
+
+/** Lowest and highest price across the sizes, or null while the product has no price. */
+export function priceRange(p: Priced): { min: number; max: number } | null {
+  if (p.price === null) return null;
+  const all = p.sizePrices ? Object.values(p.sizePrices) : [p.price];
+  return { min: Math.min(...all), max: Math.max(...all) };
+}
+
 export function clampQty(qty: number, max: number): number {
   if (!Number.isFinite(qty)) return 1;
   return Math.min(max, Math.max(1, Math.floor(qty)));
@@ -50,7 +63,7 @@ export function resolveLines(
     const size = product.sizes.find((s) => s.id === l.sizeId);
     if (!colour || !size) continue;
     const qty = clampQty(l.qty, maxQty);
-    const unitPrice = product.price;
+    const unitPrice = sizePrice(product, l.sizeId);
     out.push({
       ...l,
       qty,
@@ -147,8 +160,8 @@ export function buildOrderMessage(
   const rows = lines.map((l, i) => {
     const price = l.lineTotal === null ? s.priceTbc : formatPrice(l.lineTotal, locale);
     return [
-      `${i + 1}. ${l.product.name[locale]}`,
-      `   ${s.colour}: ${l.colourName} · ${s.size}: ${l.sizeLabel} · ${s.qty}: ${l.qty}`,
+      `${i + 1}. ${l.product.name[locale]}${l.product.code ? ` (${l.product.code})` : ''}`,
+      `   ${[l.colourName && `${s.colour}: ${l.colourName}`, `${s.size}: ${l.sizeLabel}`, `${s.qty}: ${l.qty}`].filter(Boolean).join(' · ')}`,
       `   ${price}`,
     ].join('\n');
   });
