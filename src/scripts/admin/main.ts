@@ -18,7 +18,9 @@ async function enter() {
   if (error || !isAdmin) {
     await sb!.auth.signOut();
     show('login');
-    $('[data-login-error]').textContent = error ? explain(error) : 'هذا الحساب ليس له صلاحية الإدارة.';
+    $('[data-login-error]').textContent = error
+      ? explain(error)
+      : 'دخلتِ بنجاح، لكن هذا الحساب غير مضاف كأدمن. شغّلي supabase/make-admin.sql في SQL Editor بنفس الإيميل.';
     return;
   }
   show('app');
@@ -54,7 +56,11 @@ function initLogin() {
     const { error } = await sb!.auth.signInWithPassword({ email, password });
     btn.disabled = false;
     if (error) {
-      err.textContent = /invalid/i.test(error.message) ? 'البريد أو كلمة المرور غير صحيحة.' : explain(error);
+      err.textContent = /not confirmed/i.test(error.message)
+        ? 'الحساب غير مؤكد. في Supabase: Authentication ← Users ← اختاري المستخدم ← Confirm email (أو احذفيه وأضيفيه مع Auto Confirm User).'
+        : /invalid/i.test(error.message)
+          ? 'البريد أو كلمة المرور غير صحيحة. تأكدي منها، أو غيّري كلمة المرور من Supabase: Authentication ← Users.'
+          : explain(error);
       return;
     }
     (form.elements.namedItem('password') as HTMLInputElement).value = '';
