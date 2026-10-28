@@ -71,7 +71,11 @@ export const site = {
    * is protected by row-level security in supabase/setup.sql. Never put the
    * service-role key or any other secret here.
    */
-  backend: null as null | { supabaseUrl: string; supabaseAnonKey: string },
+  backend: {
+    supabaseUrl: 'https://bdubfxmxncvrgqzxyvkx.supabase.co',
+    supabaseAnonKey:
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJkdWJmeG14bmN2cmdxenh5dmt4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMyMDI5MjksImV4cCI6MjEwODc3ODkyOX0.EwUXEBMWCnza9rtBVNP95lpWhry1xmtlKuqDfNj1AFY',
+  } as null | { supabaseUrl: string; supabaseAnonKey: string },
 
   /**
    * True while the catalogue in src/data/catalog.ts is sample data.
