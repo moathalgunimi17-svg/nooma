@@ -18,18 +18,17 @@ export const site = {
     instagramUrl: 'https://www.instagram.com/nooma.om/',
     // VERIFIED — the WhatsApp link shown in the Instagram bio.
     whatsappLink: 'https://wa.me/message/44ZHUR56MI5GD1',
-    // VERIFIED as supplied (local format). No country code has been confirmed,
-    // so it is shown and dialled exactly as given.
-    phoneDisplay: '96102882',
-    phoneTel: '96102882',
+    // VERIFIED — international form (+968) confirmed 2026-10-28.
+    phoneDisplay: '+968 96102882',
+    phoneTel: '+96896102882',
     /**
      * International WhatsApp number, digits only (e.g. "968XXXXXXXX").
-     * NOT CONFIRMED — leave null until Nooma confirms it.
+     * VERIFIED 2026-10-28.
      *  - null  → the order is copied to the clipboard and the verified
      *            wa.me/message link opens; the customer pastes it.
      *  - set   → wa.me/<number>?text=<order> opens with the order prefilled.
      */
-    whatsappNumber: null as string | null,
+    whatsappNumber: '96896102882' as string | null,
   },
 
   /** Statements taken from Nooma's Instagram bio — safe to show. */

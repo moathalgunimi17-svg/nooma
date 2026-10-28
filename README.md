@@ -72,10 +72,11 @@ The `/cart/` page is excluded from the sitemap and marked `noindex`.
 2. "Order on WhatsApp" builds a message with every item, colour, size, quantity, the subtotal, a note that delivery is
    confirmed on WhatsApp, and the optional gift note.
 3. Then:
-   - **`whatsappNumber` is `null` (current setting):** the message is copied to the clipboard and Nooma's verified
+   - **`whatsappNumber` is set (current setting, `96896102882`):** `wa.me/<number>?text=<message>` opens with the
+     order already typed.
+   - **`whatsappNumber` is `null`:** the message is copied to the clipboard and Nooma's verified
      link `https://wa.me/message/44ZHUR56MI5GD1` opens. The customer pastes the message. If copying is blocked, the
      message is shown in a box to copy by hand.
-   - **`whatsappNumber` is set:** `wa.me/<number>?text=<message>` opens with the order already typed.
 4. The site never says an order has been placed or paid. It tells the customer that Nooma confirms the order on WhatsApp.
 
 ## Where things live
@@ -100,8 +101,7 @@ All logos, characters, the cat, the sun, the star note and the stripe pattern co
    "price on request" and can't be added to the bag.
 2. **Add photos** to `src/assets/products/` and list the file names on each colourway's `photos`.
 3. **Set `sampleCatalog: false`** in `src/config/site.ts`. This removes the sample notices.
-4. **Confirm the WhatsApp number** in international form and set `whatsappNumber` (digits only). Until then the
-   copy-and-paste flow is used. The number `96102882` was supplied without a country code, so none has been added.
+4. ~~Confirm the WhatsApp number~~ — done: `+968 96102882`, set in `src/config/site.ts`.
 5. **Fill in what's marked "to be confirmed"**: size measurements, shipping fees and times, returns, payment methods,
    privacy contact. Each page shows exactly which answers are still missing.
 6. **Approve the policies.** Each policy page lists what is known and what still needs an answer. Once Nooma has
@@ -115,7 +115,6 @@ All logos, characters, the cat, the sun, the star note and the stripe pattern co
 | Real products, names, descriptions, prices, colours, sizes | Shop, product pages, cart |
 | Product photos | Cards, product gallery, cart |
 | Measurements per size (chest, length, inseam, height range) | Size guide, product size dialog |
-| WhatsApp number in international form (is it +968 96102882?) | Prefilled WhatsApp orders |
 | Delivery fees and times, inside Oman and abroad | Shipping page, cart note, FAQ |
 | Returns and exchange policy | Returns page, FAQ |
 | Payment methods (transfer, cash on delivery, links…) | FAQ, terms |
