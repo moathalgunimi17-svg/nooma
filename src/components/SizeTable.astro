@@ -2,39 +2,68 @@
 import type { Locale } from '~/config/site';
 import { useT } from '~/i18n/ui';
 import { sizes } from '~/data/catalog';
-import { sizing, sizingConfirmed } from '~/data/sizing';
-import Pending from './Pending.astro';
+import { fabric, sizing } from '~/data/sizing';
 interface Props { locale: Locale; only?: string[] }
 const { locale, only } = Astro.props;
 const t = useT(locale);
-const rows = sizes.filter((s) => !only || only.includes(s.id));
-const cell = (v: string | null) => v ?? t('size.tbc');
+const rows = sizes.filter((s) => (!only || only.includes(s.id)) && sizing[s.id]);
+const measures = [
+  ['halfChest', 'size.col.halfChest'],
+  ['shoulder', 'size.col.shoulder'],
+  ['sleeve', 'size.col.sleeve'],
+  ['topLength', 'size.col.topLength'],
+  ['waist', 'size.col.waist'],
+  ['pantsLength', 'size.col.pantsLength'],
+] as const;
 ---
 <div class="size-table">
-  {!sizingConfirmed && <Pending locale={locale} />}
-  <div class="size-table__scroll" tabindex="0" role="region" aria-label={t('size.title')}>
+  <p class="size-table__fabric"><strong>{t('size.fabric')}:</strong> {fabric[locale]}</p>
+
+  <h3 class="size-table__title">{t('size.fitsTitle')}</h3>
+  <div class="size-table__scroll" tabindex="0" role="region" aria-label={t('size.fitsTitle')}>
     <table>
       <thead>
         <tr>
           <th scope="col">{t('size.col.size')}</th>
+          <th scope="col">{t('size.col.age')}</th>
           <th scope="col">{t('size.col.height')}</th>
-          <th scope="col">{t('size.col.chest')}</th>
-          <th scope="col">{t('size.col.waist')}</th>
+          <th scope="col">{t('size.col.weight')}</th>
         </tr>
       </thead>
       <tbody>
         {rows.map((s) => {
-          const m = sizing[s.id];
+          const f = sizing[s.id]!.fits;
           return (
             <tr>
               <th scope="row">{s.label[locale]}</th>
-              <td class:list={{ tbc: !m?.height }}>{cell(m?.height ?? null)}</td>
-              <td class:list={{ tbc: !m?.chest }}>{cell(m?.chest ?? null)}</td>
-              <td class:list={{ tbc: !m?.waist }}>{cell(m?.waist ?? null)}</td>
+              <td>{f.age[locale]}</td>
+              <td>{f.heightCm ? <bdi dir="ltr">{f.heightCm}</bdi> : '—'}</td>
+              <td>{f.weightUpTo ? t('size.upTo').replace('{n}', f.weightKg) : <bdi dir="ltr">{f.weightKg}</bdi>}</td>
             </tr>
           );
         })}
       </tbody>
     </table>
   </div>
+
+  <h3 class="size-table__title">{t('size.measuresTitle')}</h3>
+  <div class="size-table__scroll" tabindex="0" role="region" aria-label={t('size.measuresTitle')}>
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">{t('size.col.size')}</th>
+          {measures.map(([, key]) => <th scope="col">{t(key)}</th>)}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((s) => (
+          <tr>
+            <th scope="row">{s.label[locale]}</th>
+            {measures.map(([field]) => <td>{sizing[s.id]![field]}</td>)}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <p class="size-table__note">{t('size.note')}</p>
 </div>

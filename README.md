@@ -138,7 +138,7 @@ flood guard) was tested on PGlite with stand-ins for Supabase's `auth` and `stor
 | Products, prices per size | `src/data/products.ts` (then `npm run catalog:sql`) |
 | Collections, sizes | `src/data/taxonomy.ts` |
 | Product photos | `src/assets/products/`, named by code (see the README there) |
-| Size chart measurements | `src/data/sizing.ts` |
+| Size chart (fits + garment measurements, fabric) | `src/data/sizing.ts` |
 | Shipping / returns / privacy / terms wording | `src/data/policies.ts` |
 | Every piece of interface text, Arabic and English | `src/i18n/ui.ts` |
 | Colours, type, spacing, motion | `src/styles/tokens.css` |
@@ -152,7 +152,7 @@ All logos, characters, the cat, the sun, the star note and the stripe pattern co
 2. **Add photos** to `src/assets/products/`, named by code (`PJ001.jpg`).
 3. ~~Set `sampleCatalog: false`~~ — done.
 4. ~~Confirm the WhatsApp number~~ — done: `+968 96102882`, set in `src/config/site.ts`.
-5. **Fill in what's marked "to be confirmed"**: size measurements, shipping fees and times, returns, payment methods,
+5. **Fill in what's marked "to be confirmed"**: shipping fees and times, returns, payment methods,
    privacy contact. Each page shows exactly which answers are still missing.
 6. **Approve the policies.** Each policy page lists what is known and what still needs an answer. Once Nooma has
    written and approved the final wording in `src/data/policies.ts`, remove the `<Pending>` draft notice in
@@ -164,11 +164,10 @@ All logos, characters, the cat, the sun, the star note and the stripe pattern co
 | --- | --- |
 | Real products, names, descriptions, prices, colours, sizes | Shop, product pages, cart |
 | Product photos | Cards, product gallery, cart |
-| Measurements per size (chest, length, inseam, height range) | Size guide, product size dialog |
 | Delivery fees and times, inside Oman and abroad | Shipping page, cart note, FAQ |
 | Returns and exchange policy | Returns page, FAQ |
 | Payment methods (transfer, cash on delivery, links…) | FAQ, terms |
-| Fabric composition and care instructions | Product details, FAQ |
+| Care instructions (fabric: 100% cotton, from the size chart) | Product details, FAQ |
 | Legal/trading name and registration (if any) | Terms, privacy, footer |
 | Brand story in Nooma's own words | About page |
 | Who handles privacy requests | Privacy page |
