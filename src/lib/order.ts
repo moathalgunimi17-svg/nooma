@@ -98,6 +98,8 @@ export interface OrderMessageStrings {
   closing: string;
   customer: string;
   name: string;
+  phone: string;
+  email: string;
   area: string;
   address: string;
 }
@@ -105,12 +107,23 @@ export interface OrderMessageStrings {
 /** Delivery details the customer types into the order dialog. */
 export interface CustomerDetails {
   name: string;
+  phone: string;
+  email: string;
   area: string;
   address: string;
 }
 
 /** One line, trimmed and capped — keeps the message tidy and short. */
 const oneLine = (v: string | undefined, max: number) => (v ?? '').replace(/\s+/g, ' ').trim().slice(0, max);
+
+/** Arabic-Indic and Persian digits → ASCII, so "٩٦١٠٢٨٨٢" counts as a number. */
+export const asciiDigits = (v: string) =>
+  v.replace(/[٠-٩۰-۹]/g, (d) => String((d.charCodeAt(0) & 0xf) % 10));
+
+/** 8–15 digits once spaces, dashes and a leading + are ignored. No country code is ever added. */
+export const validPhone = (v: string) => /^\+?\d{8,15}$/.test(asciiDigits(v).replace(/[\s\-().]/g, ''));
+
+export const validEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
 
 /**
  * Builds the WhatsApp order text: what the customer chose plus the delivery
@@ -139,11 +152,15 @@ export function buildOrderMessage(
   );
   parts.push(s.shippingNote);
   const name = oneLine(opts.customer?.name, 80);
+  const phone = asciiDigits(oneLine(opts.customer?.phone, 24));
+  const email = oneLine(opts.customer?.email, 120);
   const area = oneLine(opts.customer?.area, 80);
   const address = oneLine(opts.customer?.address, 200);
-  if (name || area || address) {
+  if (name || phone || email || area || address) {
     parts.push('', `${s.customer}:`);
     if (name) parts.push(`${s.name}: ${name}`);
+    if (phone) parts.push(`${s.phone}: ${phone}`);
+    if (email) parts.push(`${s.email}: ${email}`);
     if (area) parts.push(`${s.area}: ${area}`);
     if (address) parts.push(`${s.address}: ${address}`);
   }

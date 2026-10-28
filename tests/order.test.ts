@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { buildOrderMessage, clampQty, lineKey, resolveLines, totals, whatsappOrderUrl } from '~/lib/order';
+import {
+  asciiDigits, buildOrderMessage, clampQty, lineKey, resolveLines, totals, validEmail, validPhone, whatsappOrderUrl,
+} from '~/lib/order';
 import { formatPrice, roundOmr } from '~/lib/format';
 import { matches, normalize } from '~/lib/search';
 import type { ClientProduct } from '~/data/types';
@@ -28,8 +30,9 @@ const catalog: ClientProduct[] = [
 const strings = {
   greeting: 'Hello', size: 'Size', colour: 'Colour', qty: 'Qty', subtotal: 'Subtotal',
   priceTbc: 'price to confirm', shippingNote: 'Delivery: TBC', giftNote: 'Gift note', sampleNote: '(sample)', closing: 'Thanks',
-  customer: 'Delivery details', name: 'Name', area: 'Area', address: 'Address',
+  customer: 'Delivery details', name: 'Name', phone: 'Phone', email: 'Email', area: 'Area', address: 'Address',
 };
+const who = { name: '', phone: '', email: '', area: '', address: '' };
 
 describe('quantities', () => {
   it('clamps to 1..max and floors', () => {
@@ -103,17 +106,29 @@ describe('order message', () => {
 
   it('adds the delivery details on single, capped lines and skips an empty address', () => {
     const msg = buildOrderMessage(lines, 'en', strings, {
-      customer: { name: '  Sara\nAli ', area: 'Muscat, Bawshar', address: '   ' },
+      customer: { ...who, name: '  Sara\nAli ', phone: '٩٦١٠ ٢٨٨٢', email: 'sara@example.com', area: 'Muscat, Bawshar', address: '   ' },
     });
-    expect(msg).toContain('Delivery details:\nName: Sara Ali\nArea: Muscat, Bawshar');
+    expect(msg).toContain('Delivery details:\nName: Sara Ali\nPhone: 9610 2882\nEmail: sara@example.com\nArea: Muscat, Bawshar');
     expect(msg).not.toContain('Address:');
-    const long = buildOrderMessage(lines, 'en', strings, { customer: { name: 'x', area: 'y', address: 'z'.repeat(300) } });
+    const long = buildOrderMessage(lines, 'en', strings, { customer: { ...who, name: 'x', address: 'z'.repeat(300) } });
     expect(long).toContain(`Address: ${'z'.repeat(200)}`);
     expect(long).not.toContain('z'.repeat(201));
   });
 
   it('leaves the details section out when nothing was typed', () => {
-    expect(buildOrderMessage(lines, 'en', strings, { customer: { name: '', area: '', address: '' } })).not.toContain('Delivery details');
+    expect(buildOrderMessage(lines, 'en', strings, { customer: who })).not.toContain('Delivery details');
+  });
+
+  it('accepts local or international phones in any digits, never adding a country code', () => {
+    expect(validPhone('96102882')).toBe(true);
+    expect(validPhone('+968 9610-2882')).toBe(true);
+    expect(validPhone('٩٦١٠٢٨٨٢')).toBe(true);
+    expect(validPhone('۹۶۱۰۲۸۸۲')).toBe(true);
+    expect(validPhone('1234')).toBe(false);
+    expect(validPhone('9610abcd')).toBe(false);
+    expect(asciiDigits('٩٦١٠٢٨٨٢')).toBe('96102882');
+    expect(validEmail('a@b.co')).toBe(true);
+    expect(validEmail('a@b')).toBe(false);
   });
 
   it('marks sample orders', () => {

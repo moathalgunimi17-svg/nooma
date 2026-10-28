@@ -69,7 +69,8 @@ The `/cart/` page is excluded from the sitemap and marked `noindex`.
 
 1. The bag lives in the visitor's own browser (`localStorage`, key `nooma.cart.v1`). It holds only product id, colour,
    size and quantity. Prices are always looked up again from the catalogue, so an old bag can never show an old price.
-2. "Order on WhatsApp" asks for the customer's name and delivery area (required) and address (optional), then builds a
+2. "Order on WhatsApp" asks for the customer's name, phone and delivery area (required) and email and address
+   (optional), then builds a
    message with every item, colour, size, quantity, the subtotal, a note that delivery is confirmed on WhatsApp, those
    delivery details and the optional gift note. The customer sends it from their own WhatsApp, so it reaches Nooma
    from their number. The details are kept in `sessionStorage` for the visit only and never sent to a server.

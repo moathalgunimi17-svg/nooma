@@ -26,6 +26,17 @@ const t = useT(locale);
       <p class="field-error" id="od-name-err" data-err="name" data-msg={t('order.err.name')}></p>
     </div>
     <div class="field">
+      <label for="od-phone">{t('order.phone')}</label>
+      <input class="input" id="od-phone" name="phone" type="tel" dir="ltr" inputmode="tel" autocomplete="tel" maxlength="24" required aria-describedby="od-phone-hint od-phone-err" />
+      <small id="od-phone-hint" class="muted">{t('order.phoneHint')}</small>
+      <p class="field-error" id="od-phone-err" data-err="phone" data-msg={t('order.err.phone')}></p>
+    </div>
+    <div class="field">
+      <label for="od-email">{t('order.email')}</label>
+      <input class="input" id="od-email" name="email" type="email" dir="ltr" inputmode="email" autocomplete="email" maxlength="120" aria-describedby="od-email-err" />
+      <p class="field-error" id="od-email-err" data-err="email" data-msg={t('order.err.email')}></p>
+    </div>
+    <div class="field">
       <label for="od-area">{t('order.area')}</label>
       <input class="input" id="od-area" name="area" dir="auto" autocomplete="address-level2" maxlength="80" required aria-describedby="od-area-hint od-area-err" />
       <small id="od-area-hint" class="muted">{t('order.areaHint')}</small>

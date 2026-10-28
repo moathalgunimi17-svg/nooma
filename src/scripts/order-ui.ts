@@ -6,21 +6,27 @@
  * Orders ask for delivery details first; they go into the message only and
  * are kept in sessionStorage for this visit, never sent to a server.
  */
-import { buildOrderMessage, whatsappOrderUrl, type CustomerDetails, type ResolvedLine } from '~/lib/order';
+import {
+  buildOrderMessage, validEmail, validPhone, whatsappOrderUrl, type CustomerDetails, type ResolvedLine,
+} from '~/lib/order';
 import { config, s } from './env';
 import { cart } from './store';
 import { openDialog, toast } from './ui';
 
 const DETAILS_KEY = 'nooma.order.details.v1';
-const NO_DETAILS: CustomerDetails = { name: '', area: '', address: '' };
+const FIELDS = ['name', 'phone', 'email', 'area', 'address'] as const;
+type Checked = 'name' | 'phone' | 'email' | 'area';
+const NO_DETAILS: CustomerDetails = { name: '', phone: '', email: '', area: '', address: '' };
 
 function loadDetails(): CustomerDetails {
+  const out = { ...NO_DETAILS };
   try {
     const v = JSON.parse(sessionStorage.getItem(DETAILS_KEY) ?? 'null') as Partial<CustomerDetails> | null;
-    return { name: String(v?.name ?? ''), area: String(v?.area ?? ''), address: String(v?.address ?? '') };
+    for (const k of FIELDS) out[k] = String(v?.[k] ?? '');
   } catch {
-    return { ...NO_DETAILS };
+    /* ignore */
   }
+  return out;
 }
 
 function saveDetails(d: CustomerDetails) {
@@ -68,14 +74,18 @@ function present(build: (d: CustomerDetails) => string, opener: HTMLElement | nu
 
   fields.hidden = !withDetails;
   const saved = loadDetails();
-  (['name', 'area', 'address'] as const).forEach((k) => {
+  FIELDS.forEach((k) => {
     input(k).value = saved[k];
     input(k).removeAttribute('aria-invalid');
   });
   fields.querySelectorAll<HTMLElement>('[data-err]').forEach((e) => (e.textContent = ''));
 
-  const read = (): CustomerDetails =>
-    withDetails ? { name: input('name').value, area: input('area').value, address: input('address').value } : NO_DETAILS;
+  const read = (): CustomerDetails => {
+    if (!withDetails) return NO_DETAILS;
+    const d = { ...NO_DETAILS };
+    for (const k of FIELDS) d[k] = input(k).value;
+    return d;
+  };
 
   let message = '';
   const refresh = () => {
@@ -84,25 +94,30 @@ function present(build: (d: CustomerDetails) => string, opener: HTMLElement | nu
     open.href = config.whatsappNumber ? whatsappOrderUrl(config.whatsappNumber, message) : config.whatsappLink;
   };
 
-  const showError = (name: 'name' | 'area', on: boolean) => {
+  const showError = (name: Checked, on: boolean) => {
     const err = fields.querySelector<HTMLElement>(`[data-err="${name}"]`)!;
     err.textContent = on ? err.dataset.msg ?? '' : '';
     input(name).setAttribute('aria-invalid', String(on));
   };
-  /** Name and area are required for an order; address is optional. */
+  /** Name, phone and area are required for an order; email and address are optional. */
   const valid = (): boolean => {
     if (!withDetails) return true;
-    const badName = input('name').value.trim().length < 2;
-    const badArea = input('area').value.trim().length < 2;
-    showError('name', badName);
-    showError('area', badArea);
-    if (badName || badArea) input(badName ? 'name' : 'area').focus();
-    return !badName && !badArea;
+    const v = read();
+    const bad: Record<Checked, boolean> = {
+      name: v.name.trim().length < 2,
+      phone: !validPhone(v.phone),
+      email: v.email.trim() !== '' && !validEmail(v.email),
+      area: v.area.trim().length < 2,
+    };
+    (Object.keys(bad) as Checked[]).forEach((k) => showError(k, bad[k]));
+    const first = (['name', 'phone', 'email', 'area'] as const).find((k) => bad[k]);
+    if (first) input(first).focus();
+    return !first;
   };
 
   fields.oninput = (e) => {
     const el = e.target as HTMLInputElement;
-    if (el.getAttribute('aria-invalid') === 'true') showError(el.name as 'name' | 'area', false);
+    if (el.getAttribute('aria-invalid') === 'true') showError(el.name as Checked, false);
     saveDetails(read());
     refresh();
   };
@@ -110,6 +125,9 @@ function present(build: (d: CustomerDetails) => string, opener: HTMLElement | nu
   if (config.whatsappNumber) text.textContent = s(withDetails ? 'order.textDetails' : 'order.text');
   else text.textContent = s(withDetails ? 'order.textDetails' : 'order.textCopy');
 
+  // On phones, open wa.me in the same tab: it hands straight over to the WhatsApp app,
+  // and some in-app browsers (Instagram, Snapchat…) silently ignore target=_blank.
+  open.target = matchMedia('(pointer: coarse)').matches ? '_self' : '_blank';
   open.onclick = (e) => {
     if (!valid()) {
       e.preventDefault();
@@ -160,6 +178,8 @@ function strings() {
     closing: s('order.msg.closing'),
     customer: s('order.msg.customer'),
     name: s('order.msg.name'),
+    phone: s('order.msg.phone'),
+    email: s('order.msg.email'),
     area: s('order.msg.area'),
     address: s('order.msg.address'),
   };
