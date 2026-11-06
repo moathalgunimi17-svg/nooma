@@ -1,0 +1,1 @@
+function e(e){return e.toLowerCase().normalize(`NFKD`).replace(/[\u0300-\u036f\u064b-\u065f\u0670\u0640]/g,``).replace(/[أإآٱ]/g,`ا`).replace(/ى/g,`ي`).replace(/ة/g,`ه`).replace(/ؤ/g,`و`).replace(/ئ/g,`ي`).replace(/\s+/g,` `).trim()}function t(t,n){let r=e(n).split(` `).filter(Boolean);return r.length?r.every(e=>t.includes(e)):!1}export{t};
